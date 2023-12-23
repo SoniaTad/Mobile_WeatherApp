@@ -51,6 +51,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetDefaults.SheetPeekHeight
 import androidx.compose.material3.BottomSheetScaffold
@@ -64,6 +65,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -100,6 +102,7 @@ fun PurpleActivityMaterial3() {
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
     var optionalHandlerClicked by remember { mutableStateOf(false) }
+    var currentListState = remember { mutableStateOf(hours) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
 
@@ -114,7 +117,7 @@ fun PurpleActivityMaterial3() {
 
          // Set the initial peek height to 300dp
         // Set the expanded height to 600dp
-        sheetPeekHeight =  290.dp,
+        sheetPeekHeight =  280.dp,
         //sheetPeekHeight = SheetPeekHeight. 300.dp,(peekHeight = 300.dp, expandHeight = 600.dp),
         sheetContent = {
             // Add hour-by-hour forecast content
@@ -132,13 +135,16 @@ fun PurpleActivityMaterial3() {
                     {
                         Row( verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp, horizontal = 40.dp)) {
-                            ElevatedButton(onClick = {optionalHandlerClicked = !optionalHandlerClicked },modifier= Modifier
+                            ElevatedButton(onClick = {currentListState.value= weeks
+
+
+                                                     },modifier= Modifier
                                 .width(95.dp)
                                 .height(35.dp)) {
                                 Text("Weekly",modifier=Modifier.width(90.dp))
                             }
                             (Spacer(modifier = Modifier.width(120.dp)))
-                            ElevatedButton(onClick = { },modifier= Modifier
+                            ElevatedButton(onClick = { currentListState.value= hours},modifier= Modifier
                                 .width(90.dp)
                                 .height(35.dp)) {
                                 Text("Daily",modifier=Modifier.width(90.dp))}
@@ -154,7 +160,8 @@ fun PurpleActivityMaterial3() {
 
                        //run { scope.launch { scaffoldState.bottomSheetState.partialExpand() }}
                         (Spacer(modifier = Modifier.height(20.dp)))
-                        App()
+                        //App()
+                        intermidiete(currentListState)
                         (Spacer(modifier = Modifier.height(20.dp)))
                         Box( modifier= Modifier
                             .width(390.dp)
@@ -278,25 +285,24 @@ fun HourlySchedule(hours:List<String>) {
     }
 
 
+val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
+val weeks = listOf("Mon","Tue","Wed")
+@Composable
+fun App(hours: List<String>){
 
-@Composable
-fun App(){
-    val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
+    //val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
     HourlySchedule(hours = hours)
+
 }
 @Composable
-fun SheetCards(){
-    Card(
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-    ) { Text(text = "hi")}
+fun intermidiete(currentListState: MutableState<List<String>>){
+
+    App(currentListState.value)
+
+
 }
-@Composable
-fun Ap(){
-    SheetCards()
-}
+// Call the SecondComposable function and pass the currentList
+
 
 @Composable
 fun CardItem(icon: ImageVector, text: String) {
@@ -324,7 +330,7 @@ fun CardItem(icon: ImageVector, text: String) {
 @Composable
 fun LazyColumnWithCards() {
     val cardItems = listOf(
-        CardItemData(icon = Icons.Default.Home, text = "Home"),
+        CardItemData(icon = Icons.Filled.Home , text = "Home"),
         CardItemData(icon = Icons.Default.Favorite, text = "Favorite"),
         CardItemData(icon = Icons.Default.Settings, text = "Settings"),
         CardItemData(icon = Icons.Default.Person, text = "Profile"),
