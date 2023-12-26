@@ -1,10 +1,14 @@
 package com.example.weatherapp
+import android.Manifest
 import androidx.compose.ui.Alignment
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.style.BackgroundColorSpan
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,6 +55,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.BottomSheetDefaults.SheetPeekHeight
@@ -62,6 +67,7 @@ import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -76,6 +82,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.launch
 
 
@@ -84,10 +91,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
-                {
-                    PurpleActivityMaterial3()
+                // Remember the permission state
+                var hasLocationPermission by remember { mutableStateOf(
+                    ContextCompat.checkSelfPermission(
+                        this@MainActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                )}
+                // Conditional navigation based on permission state
+                if (hasLocationPermission) {
+                    PurpleActivityMaterial3() // Navigate to the main app screen that includes WeatherLocationPage
+                } else {
+                    EnableLocationPage(onPermissionGranted = {
+                        hasLocationPermission = true
+                    })
                 }
             }
         }
@@ -176,9 +193,6 @@ fun PurpleActivityMaterial3() {
                     }
 
                     // Add expanded forecast details
-
-
-
                 }
 
         },
@@ -341,6 +355,65 @@ fun LazyColumnWithCards() {
         items(cardItems) { item ->
             CardItem(icon = item.icon, text = item.text)
         }
+    }
+}
+
+@Composable
+fun EnableLocationPage(onPermissionGranted: () -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    // Launcher for handling location permission request
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            onPermissionGranted()
+        } else {
+            // Handle the case where the user denies the permission
+            // You might want to show a message or a dialog here
+        }
+    }
+
+    // UI for Enable Location page
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.LightGray),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "Enable Location Services")
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "To continue using the app, please enable location services.")
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = { showDialog = true }) {
+                Text(text = "Enable Location")
+            }
+        }
+    }
+
+    // Show dialog when showDialog is true
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Enable Location Services") },
+            text = { Text("Do you want to enable location services now or later?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDialog = false
+                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                ) {
+                    Text("Now")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Later")
+                }
+            }
+        )
     }
 }
 
