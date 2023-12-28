@@ -1,41 +1,23 @@
 package com.example.weatherapp
+
+
 import android.Manifest
-import androidx.compose.ui.Alignment
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.text.style.BackgroundColorSpan
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.material.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.weatherapp.ui.theme.WeatherAppTheme
-
-import androidx.compose.material3.BottomAppBar
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,10 +25,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-
-
-import androidx.compose.material3.ExperimentalMaterial3Api
-
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -54,63 +33,61 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
-
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.BottomSheetDefaults.SheetPeekHeight
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.weatherapp.ui.theme.WeatherAppTheme
 import kotlinx.coroutines.launch
-
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                // Remember the permission state
                 var hasLocationPermission by remember { mutableStateOf(
                     ContextCompat.checkSelfPermission(
                         this@MainActivity,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
                 )}
-                // Conditional navigation based on permission state
+
                 if (hasLocationPermission) {
-                    PurpleActivityMaterial3() // Navigate to the main app screen that includes WeatherLocationPage
+                    PurpleActivityMaterial3()
                 } else {
-                    EnableLocationPage(onPermissionGranted = {
+                    EnableLocation(onPermissionGranted = {
                         hasLocationPermission = true
                     })
                 }
             }
-            
         }
     }
 }
+
+
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -133,16 +110,11 @@ fun PurpleActivityMaterial3() {
 
         scaffoldState = bottomSheetScaffoldState,
 
-         // Set the initial peek height to 300dp
-        // Set the expanded height to 600dp
-        sheetPeekHeight =  280.dp,
-        //sheetPeekHeight = SheetPeekHeight. 300.dp,(peekHeight = 300.dp, expandHeight = 600.dp),
-        sheetContent = {
-            // Add hour-by-hour forecast content
 
-                // Content when the bottom sheet is expanded
+        sheetPeekHeight =  280.dp,
+        sheetContent = {
+
                 Column (
-                    //verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier= Modifier
                         .fillMaxWidth()
@@ -192,10 +164,7 @@ fun PurpleActivityMaterial3() {
                         }
 
                     }
-
-                    // Add expanded forecast details
                 }
-
         },
 
 
@@ -316,7 +285,6 @@ fun intermidiete(currentListState: MutableState<List<String>>){
 
 
 }
-// Call the SecondComposable function and pass the currentList
 
 
 @Composable
@@ -356,65 +324,6 @@ fun LazyColumnWithCards() {
         items(cardItems) { item ->
             CardItem(icon = item.icon, text = item.text)
         }
-    }
-}
-
-@Composable
-fun EnableLocationPage(onPermissionGranted: () -> Unit) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    // Launcher for handling location permission request
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            onPermissionGranted()
-        } else {
-            // Handle the case where the user denies the permission
-            // You might want to show a message or a dialog here
-        }
-    }
-
-    // UI for Enable Location page
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "Enable Location Services")
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "To continue using the app, please enable location services.")
-            Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = { showDialog = true }) {
-                Text(text = "Enable Location")
-            }
-        }
-    }
-
-    // Show dialog when showDialog is true
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Enable Location Services") },
-            text = { Text("Do you want to enable location services now or later?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialog = false
-                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                    }
-                ) {
-                    Text("Now")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Later")
-                }
-            }
-        )
     }
 }
 

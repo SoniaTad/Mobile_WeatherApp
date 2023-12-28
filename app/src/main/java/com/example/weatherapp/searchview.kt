@@ -1,4 +1,5 @@
 package com.example.weatherapp
+// Contents of the file (e.g., class, object, function)
 
 
 import android.content.Context
@@ -19,16 +20,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.weatherapp.data.WeatherApiService
+import com.example.weatherapp.data.models.CurrentWeather
 import com.example.weatherapp.ui.theme.WeatherAppTheme
+import com.example.weatherapp.MainActivity
+import kotlinx.coroutines.launch
+
 
 @Composable
 fun BackArrowButton(context: Context) {
@@ -81,26 +92,118 @@ fun SearchBar() {
     ) {
     }
 }
-@Composable
-fun MyPreview(context: Context = LocalContext.current) {
-    WeatherAppTheme(darkTheme = false) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
+//@Composable
+//fun MyPreview() {
+//    WeatherAppTheme(darkTheme = false) {
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colorScheme.background
+//        ) {
+//            Column(
+//                modifier = Modifier.fillMaxSize(),
+//                horizontalAlignment = Alignment.Start
+//            ) {
+//                BackArrowButton(context = LocalContext.current)
+//                SearchBar()
+//
+//                // Display WeatherCard with empty strings
+//                WeatherCard(
+//                    cityName = cityName,
+//                    temperatureRange = temperatureRange,
+//                    weatherDescription = weatherDescription
+//                )
+//            }
+//        }
+//    }
+//}
+class WeatherViewModel(private val apiService: WeatherApiService) : ViewModel() {
+    private val _weatherData = MutableLiveData<CurrentWeather>()
+    val weatherData: LiveData<CurrentWeather> = _weatherData
 
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.Start
-            ) {
-                BackArrowButton(context = LocalContext.current)
-                SearchBar()
+    fun fetchWeatherData(city: String, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getCurrentWeather(city, "metric", apiKey)
+                if (response.isSuccessful && response.body() != null) {
+                    _weatherData.value = response.body()
+                } else {
+                    // Handle errors
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
             }
         }
     }
 }
-@Preview
+
 @Composable
-fun MyPreviewPreview() {
-    MyPreview()
+fun MyPreview(viewModel: WeatherViewModel) {
+    val context = LocalContext.current
+    val weather by viewModel.weatherData.observeAsState()
+
+    // Assuming you have a way to input city name
+    val cityName = "bristol" // Replace with actual input
+    val apiKey = "63a7e436b523ae004cb898b99918ff61" // Replace with your actual API key
+
+    LaunchedEffect(cityName) {
+        viewModel.fetchWeatherData(cityName, apiKey)
+    }
+
+    WeatherAppTheme {
+        WeatherAppTheme(darkTheme = false) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    BackArrowButton(context = LocalContext.current)
+                    SearchBar()
+
+                    weather?.let {
+                        WeatherCard(
+                            cityName = it.name,
+                            temperatureRange = "${it.main.temp}°C",
+                            weatherDescription = it.weather.first().description
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun MyPreview() {
+//    WeatherAppTheme(darkTheme = false) {
+//        Surface(
+//            modifier = Modifier.fillMaxSize(),
+//            color = MaterialTheme.colorScheme.background
+//        ) {
+//            Column(
+//                modifier = Modifier.fillMaxSize(),
+//                horizontalAlignment = Alignment.Start
+//            ) {
+//                BackArrowButton(context = LocalContext.current)
+//                SearchBar()
+//
+//                // Display WeatherCard with hardcoded sample data
+//                WeatherCard(
+//                    cityName = "Sample City",
+//                    temperatureRange = "20°C - 25°C",
+//                    weatherDescription = "Sunny"
+//                )
+//            }
+//        }
+//    }
+//}
+
+
+//@Preview(showBackground = true)
+//@Composable
+//fun MyPreviewPreview() {
+//    MyPreview()
+//}
