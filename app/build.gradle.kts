@@ -61,7 +61,7 @@ dependencies {
     implementation ("androidx.compose.runtime:runtime-livedata:<version>")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
 
-
+    implementation ("android.arch.lifecycle:extensions:1.1.1")
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("com.google.android.material:material:1.11.0")

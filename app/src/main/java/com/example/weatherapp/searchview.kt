@@ -29,11 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.weatherapp.data.WeatherApiService
 import com.example.weatherapp.data.models.CurrentWeather
 import com.example.weatherapp.ui.theme.WeatherAppTheme
@@ -138,6 +141,7 @@ class WeatherViewModel(private val apiService: WeatherApiService) : ViewModel() 
 
 @Composable
 fun MyPreview(viewModel: WeatherViewModel) {
+
     val context = LocalContext.current
     val weather by viewModel.weatherData.observeAsState()
 
@@ -202,8 +206,8 @@ fun MyPreview(viewModel: WeatherViewModel) {
 //}
 
 
-//@Preview(showBackground = true)
-//@Composable
-//fun MyPreviewPreview() {
-//    MyPreview()
-//}
+@Preview(showBackground = true)
+@Composable
+fun MyPreviewPreview() {
+ MyPreview(viewModel = WeatherViewModel())
+}
