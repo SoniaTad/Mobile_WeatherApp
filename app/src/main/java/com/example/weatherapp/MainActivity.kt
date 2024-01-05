@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,7 +101,7 @@ fun PurpleActivityMaterial3() {
     var currentListState = remember { mutableStateOf(hours) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
-
+    val context = LocalContext.current
     val sheetPeekHeight = 550.dp
     val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
 
@@ -184,10 +185,10 @@ fun PurpleActivityMaterial3() {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = {context.startActivity(Intent(context, searchview::class.java)) }) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "Ellipsis"
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
                         )
                     }
                 }
