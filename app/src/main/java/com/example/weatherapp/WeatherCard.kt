@@ -1,3 +1,4 @@
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -184,7 +185,7 @@ fun WeatherCard(
                     ) {
                         // Background image
                         Image(
-                            painter = painterResource(id = R.drawable.weather_ic),
+                            painter = painterResource(id = R.drawable.ic_weather_windy),
                             contentDescription = null,
                             modifier = Modifier
                                 .fillMaxSize()

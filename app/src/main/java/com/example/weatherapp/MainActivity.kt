@@ -3,6 +3,7 @@ package com.example.weatherapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,7 +30,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -54,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +64,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,7 +179,7 @@ fun PurpleActivityMaterial3() {
             TopAppBar(
                 title = { Text(text = "Title") },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { /* do something, like open settings */ }) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings"
@@ -185,7 +187,10 @@ fun PurpleActivityMaterial3() {
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = {context.startActivity(Intent(context, searchview::class.java)) }) {
+                    IconButton(onClick = {
+                        // Start SearchView Activity when the IconButton is clicked
+                        context.startActivity(Intent(context, SearchView::class.java))
+                    }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Search"
@@ -329,12 +334,6 @@ fun LazyColumnWithCards() {
 }
 
 data class CardItemData(val icon: ImageVector, val text: String)
-
-
-
-
-
-
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
