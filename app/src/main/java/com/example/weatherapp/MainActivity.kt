@@ -97,6 +97,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PurpleActivityMaterial3() {
+
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
     var optionalHandlerClicked by remember { mutableStateOf(false) }

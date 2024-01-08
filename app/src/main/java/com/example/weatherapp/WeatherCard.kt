@@ -1,6 +1,7 @@
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,17 +11,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,8 +37,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.weatherapp.R
-
+import androidx.compose.material3.*
 //package com.example.weatherapp
 //
 //import androidx.compose.foundation.ExperimentalFoundationApi
@@ -134,7 +140,6 @@ import com.example.weatherapp.R
 //temperatureRange = "20°C - 25°C"
 //)
 //}
-
 @Composable
 fun WeatherCard(
     cityName: String,
@@ -142,6 +147,7 @@ fun WeatherCard(
     temperatureRange: String
 ) {
     var cardData by remember { mutableStateOf(listOf(WeatherData(cityName, weatherDescription, temperatureRange))) }
+    var showDialog by remember { mutableStateOf(false) }
 
     Column {
         Row(
@@ -161,7 +167,7 @@ fun WeatherCard(
             IconButton(
                 onClick = {
                     if (cardData.isNotEmpty()) {
-                        cardData = cardData.dropLast(1)
+                        showDialog = true
                     }
                 }
             ) {
@@ -221,6 +227,71 @@ fun WeatherCard(
                 }
             }
         }
+
+        if (showDialog) {
+            CitySelectionDialog(
+                cities = cardData.map { it.cityName },
+                onDismiss = { showDialog = false },
+                onCitySelected = { index ->
+                    cardData = cardData.filterIndexed { i, _ -> i != index }
+                    showDialog = false
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun CitySelectionDialog(
+    cities: List<String>,
+    onDismiss: () -> Unit,
+    onCitySelected: (Int) -> Unit
+) {
+    Dialog(
+        onDismissRequest = { onDismiss() },
+        content = {
+            Box(
+                modifier = Modifier.run {
+                    padding(16.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background)
+                } // Use background color from the theme
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text("Select a city to delete")
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    cities.forEachIndexed { index, city ->
+                        CitySelectionItem(city = city) {
+                            onCitySelected(index)
+                            onDismiss()
+                        }
+                        if (index < cities.size - 1) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+            }
+        }
+    )
+}
+
+
+@Composable
+fun CitySelectionItem(city: String, onItemClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(imageVector = Icons.Default.Check, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(city)
     }
 }
 

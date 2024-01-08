@@ -1,4 +1,4 @@
-package com.example.weatherapp.utils
+package com.example.weatherapp
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalConfiguration

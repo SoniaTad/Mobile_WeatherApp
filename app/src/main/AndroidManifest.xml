@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="LockedOrientationActivity">
     <!-- For approximate location -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- For precise location -->
@@ -22,20 +23,24 @@
             android:name=".LogoPage"
             android:exported="true"
             android:label="@string/title_activity_logo_page"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".UserPreferences"
             android:exported="true"
             android:label="@string/title_activity_user_preferences"
-            android:theme="@style/Theme.WeatherApp" />
+            android:theme="@style/Theme.WeatherApp"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".SearchView"
-            android:exported="true"/>
+            android:exported="true"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.WeatherApp">
+            android:theme="@style/Theme.WeatherApp"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,5 +49,6 @@
         </activity>
 
     </application>
+
 
 </manifest>
