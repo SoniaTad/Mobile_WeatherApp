@@ -175,7 +175,6 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel) {
 @Composable
 fun SearchViewPreview(viewModel: WeatherViewModel) {
     val weather by viewModel.weatherData.observeAsState()
-    val cityName: String = "berlin"
 
     WeatherAppTheme(darkTheme = false) {
         Surface(
