@@ -193,8 +193,17 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                     WeatherCard(
                         cityName = it.name,
                         temperatureRange = "${it.main.temp_min.toInt()}°C - ${it.main.temp_max.toInt()}°C",
-                        weatherDescription = it.weather.first().description.capitalize(Locale.ROOT)
+                        weatherDescription = it.weather.first().description.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(
+                                Locale.ROOT
+                            ) else it.toString()
+                        }
                     )
+//                    WeatherCard(
+//                        cityName = it.name,
+//                        temperatureRange = "${it.main.temp_min.toInt()}°C - ${it.main.temp_max.toInt()}°C",
+//                        weatherDescription = it.weather.first().description.capitalize(Locale.ROOT)
+//                    )
                 }
             }
         }
