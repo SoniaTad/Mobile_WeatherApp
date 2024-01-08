@@ -189,7 +189,7 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                 SearchViewSearchBar(viewModel) // This will trigger searchCity in the ViewModel
 
                 // Update WeatherCard with the latest weather data
-                weather?.let {
+                weather?.let { it ->
                     WeatherCard(
                         cityName = it.name,
                         temperatureRange = "${it.main.temp_min.toInt()}°C - ${it.main.temp_max.toInt()}°C",
