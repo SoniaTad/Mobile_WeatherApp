@@ -12,20 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.weatherapp.R
-import androidx.compose.material3.*
+
 //package com.example.weatherapp
 //
 //import androidx.compose.foundation.ExperimentalFoundationApi
@@ -140,93 +136,92 @@ import androidx.compose.material3.*
 //temperatureRange = "20°C - 25°C"
 //)
 //}
+
 @Composable
 fun WeatherCard(
     cityName: String,
     weatherDescription: String,
-    temperatureRange: String
+    temperatureRange: String,
 ) {
     var cardData by remember { mutableStateOf(listOf(WeatherData(cityName, weatherDescription, temperatureRange))) }
     var showDialog by remember { mutableStateOf(false) }
 
     Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconButton(
-                onClick = {
-                    cardData = cardData + WeatherData("New City", "New Description", "New Temperature")
-                }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(8.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            IconButton(
+//                onClick = {
+//                    cardData = cardData + WeatherData("New City", "New Description", "New Temperature")
+//                }
+//            ) {
+//                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+//            }
+//
+//            IconButton(
+//                onClick = {
+//                    if (cardData.isNotEmpty()) {
+//                        showDialog = true
+//                    }
+//                }
+//            ) {
+//                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+//            }
+//        }
+        cardData.forEach { data ->
+            Card(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .background(Color.Transparent, shape = RoundedCornerShape(10.dp)),
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-            }
-
-            IconButton(
-                onClick = {
-                    if (cardData.isNotEmpty()) {
-                        showDialog = true
-                    }
-                }
-            ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-            }
-        }
-
-        LazyColumn {
-            items(cardData) { data ->
-                Card(
+                Box(
                     modifier = Modifier
-                        .padding(8.dp)
+                        .height(250.dp)
                         .fillMaxWidth()
-                        .background(Color.Transparent, shape = RoundedCornerShape(10.dp)),
+                        .background(Color.Transparent)
                 ) {
-                    Box(
+                    // Background image
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_weather_windy),
+                        contentDescription = null,
                         modifier = Modifier
-                            .height(250.dp)
-                            .fillMaxWidth()
-                            .background(Color.Transparent)
-                    ) {
-                        // Background image
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_weather_windy),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Transparent),
-                            contentScale = ContentScale.FillWidth
-                        )
+                            .fillMaxSize()
+                            .background(Color.Transparent),
+                        contentScale = ContentScale.FillWidth
+                    )
 
-                        // Texts positioned at the bottom left of the image
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(start = 16.dp, bottom = 16.dp)
-                        ) {
-                            Text(
-                                text = data.temperatureRange,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(90.dp))
-                            Text(
-                                text = data.weatherDescription,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = data.cityName,
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = Color.White
-                            )
-                        }
+                    // Texts positioned at the bottom left of the image
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 16.dp)
+                    ) {
+                        Text(
+                            text = data.temperatureRange,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(90.dp))
+                        Text(
+                            text = data.weatherDescription,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = data.cityName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color.White
+                        )
                     }
                 }
             }
         }
+
 
         if (showDialog) {
             CitySelectionDialog(
@@ -242,6 +237,30 @@ fun WeatherCard(
 }
 
 @Composable
+fun AddRemoveWeatherButtons(
+    onAddClicked: () -> Unit,
+    onRemoveClicked: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        IconButton(onClick = onAddClicked) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+        }
+
+        IconButton(onClick = onRemoveClicked) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove")
+        }
+    }
+}
+
+
+
+
+@Composable
 fun CitySelectionDialog(
     cities: List<String>,
     onDismiss: () -> Unit,
@@ -253,8 +272,8 @@ fun CitySelectionDialog(
             Box(
                 modifier = Modifier.run {
                     padding(16.dp)
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.background)
                 } // Use background color from the theme
             ) {
                 Column(

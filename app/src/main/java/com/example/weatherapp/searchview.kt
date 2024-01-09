@@ -2,6 +2,7 @@ package com.example.weatherapp
 // Contents of the file (e.g., class, object, function)
 
 
+import AddRemoveWeatherButtons
 import WeatherCard
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -60,40 +63,32 @@ class SearchView : ComponentActivity() {
 
 class WeatherViewModel : ViewModel() {
     private val apiService = RetrofitInstance.create()
-    private val _weatherData = MutableLiveData<CurrentWeather>()
-    val weatherData: LiveData<CurrentWeather> = _weatherData
+    private val _weatherData = MutableLiveData<List<CurrentWeather>>(listOf())
+    val weatherData: LiveData<List<CurrentWeather>> = _weatherData
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
 
 //    Need to work out how to add more than one card
 //    Nee dto work out how to add and remove with the buttons so that they are interactive with the cards
     fun fetchWeatherData(city: String) {
-        viewModelScope.launch {
-            try {
-                val response = apiService.getCurrentWeather(city, "metric", apiKey)
-                if (response.isSuccessful && response.body() != null) {
-                    _weatherData.value = response.body()
-                } else {
-                    // Handle errors
-                }
-            } catch (e: Exception) {
-                // Handle exceptions
+    viewModelScope.launch {
+        try {
+            val response = apiService.getCurrentWeather(city, "metric", apiKey)
+            if (response.isSuccessful && response.body() != null) {
+                _weatherData.value = _weatherData.value?.plus(response.body()!!)
+            } else {
+                // Handle errors
             }
+        } catch (e: Exception) {
+            // Handle exceptions
         }
     }
-//    fun searchCity(cityName: String) {
-//        viewModelScope.launch {
-//            try {
-//                val response = apiService.getCurrentWeather(cityName, "metric", apiKey)
-//                if (response.isSuccessful && response.body() != null) {
-//                    _weatherData.value = response.body()
-//                } else {
-//                    // Log error or update an error LiveData to show a message to the user
-//                }
-//            } catch (e: Exception) {
-//                // Log error or update an error LiveData to show a message to the user
-//            }
-//        }
-//    }
+
+    fun removeWeatherData(cityName: String) {
+        val updatedList = _weatherData.value?.filterNot { it.name == cityName }
+        _weatherData.value = updatedList
+    }
+}
+
 
 }
 
@@ -174,7 +169,7 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel) {
 //@Preview(showBackground = true)
 @Composable
 fun SearchViewPreview(viewModel: WeatherViewModel) {
-    val weather by viewModel.weatherData.observeAsState()
+    val weatherList by viewModel.weatherData.observeAsState(listOf())
 
     WeatherAppTheme(darkTheme = false) {
         Surface(
@@ -186,25 +181,33 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                 horizontalAlignment = Alignment.Start
             ) {
                 SearchViewBackArrowButton(context = LocalContext.current)
-                SearchViewSearchBar(viewModel) // This will trigger searchCity in the ViewModel
+                SearchViewSearchBar(viewModel)
 
-                // Update WeatherCard with the latest weather data
-                weather?.let {
-                    WeatherCard(
-                        cityName = it.name,
-                        temperatureRange = "${it.main.temp_min.toInt()}°C - ${it.main.temp_max.toInt()}°C",
-                        weatherDescription = it.weather.first().description.capitalize(Locale.ROOT)
-                    )
-//                    WeatherCard(
-//                        cityName = it.name,
-//                        temperatureRange = "${it.main.temp_min.toInt()}°C - ${it.main.temp_max.toInt()}°C",
-//                        weatherDescription = it.weather.first().description.capitalize(Locale.ROOT)
-//                    )
+                // Place Add and Remove buttons here
+                AddRemoveWeatherButtons(
+                    onAddClicked = {
+                        // Define the action for the add button
+                    },
+                    onRemoveClicked = {
+
+                    }
+                )
+
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(weatherList) { weather ->
+                        WeatherCard(
+                            cityName = weather.name,
+                            temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
+                            weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT)
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+
 
 //@Preview(showBackground = true)
 //@Composable
