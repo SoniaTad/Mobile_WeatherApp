@@ -60,7 +60,7 @@ dependencies {
     // observeAsState
     implementation ("androidx.compose.runtime:runtime-livedata:<version>")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
-
+    implementation ("com.google.android.gms:play-services-location:21.0.1")
     implementation ("android.arch.lifecycle:extensions:1.1.1")
     implementation ("androidx.compose.material3:material3:1.0.0-alpha02")
     implementation("androidx.core:core-ktx:1.12.0")
