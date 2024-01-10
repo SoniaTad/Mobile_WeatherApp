@@ -71,19 +71,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                var hasLocationPermission by remember { mutableStateOf(
-                    ContextCompat.checkSelfPermission(
-                        this@MainActivity,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                )}
+              
 
-                if (hasLocationPermission) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
+                {
                     PurpleActivityMaterial3()
-                } else {
-                    EnableLocation(onPermissionGranted = {
-                        hasLocationPermission = true
-                    })
                 }
             }
         }
