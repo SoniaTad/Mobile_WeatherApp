@@ -109,7 +109,18 @@ class WeatherViewModel : ViewModel() {
         Log.d("WeatherCard", "Selected city: $cityName")
     }
 
-
+    fun fetchWeatherDataForPreview(city: String, onResult: (CurrentWeather) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getCurrentWeather(city, "metric", apiKey)
+                if (response.isSuccessful && response.body() != null) {
+                    onResult(response.body()!!)
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
+            }
+        }
+    }
 
 }
 
@@ -127,13 +138,17 @@ fun SearchViewBackArrowButton(context: Context) {
 //@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchViewSearchBar(viewModel: WeatherViewModel) {
+fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
     OutlinedTextField(
         value = query,
-        onValueChange = { newText -> query = newText },
+//        onValueChange = { newText -> query = newText },
+        onValueChange = {
+            query = it
+            onQueryChanged(it)  // Notify the caller about the change
+        },
         label = { Text("Enter city name") },
         singleLine = true,
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
@@ -192,8 +207,8 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel) {
 fun SearchViewPreview(viewModel: WeatherViewModel) {
     val weatherList by viewModel.weatherData.observeAsState(listOf())
     var showDeleteDialog by remember { mutableStateOf(false) }
-
-
+    var previewQuery by remember { mutableStateOf("") }
+    var previewWeather by remember { mutableStateOf<CurrentWeather?>(null) }
 
     WeatherAppTheme(darkTheme = false) {
         Surface(
@@ -205,7 +220,25 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                 horizontalAlignment = Alignment.Start
             ) {
                 SearchViewBackArrowButton(context = LocalContext.current)
-                SearchViewSearchBar(viewModel)
+                SearchViewSearchBar(viewModel) { newQuery ->
+                    previewQuery = newQuery
+                    if (newQuery.isNotEmpty()) {
+                        viewModel.fetchWeatherDataForPreview(newQuery) { weatherData ->
+                            previewWeather = weatherData
+                        }
+                    } else {
+                        previewWeather = null
+                    }
+                }
+                // Show the preview card if there is data
+                previewWeather?.let { weather ->
+                    WeatherCard(
+                        cityName = weather.name,
+                        temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
+                        weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT),
+                        onCardSelected = {}
+                    )
+                }
 
                 // Place Add and Remove buttons here
                 AddRemoveWeatherButtons(
