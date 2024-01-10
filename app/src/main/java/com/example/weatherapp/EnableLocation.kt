@@ -102,6 +102,7 @@ fun LocationPermissionScreen(context:Context,locationStore:LocationStore) {
                 if (location != null) {
                     val latitude = location.latitude
                     val longitude = location.longitude
+                    Toast.makeText(context, "Location is has a latitude of $latitude and longitude of $longitude", Toast.LENGTH_SHORT).show()
 
 
                 coroutine.launch {
