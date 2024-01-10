@@ -72,7 +72,7 @@ class WeatherViewModel : ViewModel() {
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
 
     private val _selectedCity = MutableLiveData<String?>()
-    val selectedCity: LiveData<String?> = _selectedCity
+//    val selectedCity: LiveData<String?> = _selectedCity
 
     //    Need to work out how to add more than one card
 //    Nee dto work out how to add and remove with the buttons so that they are interactive with the cards
@@ -95,13 +95,13 @@ class WeatherViewModel : ViewModel() {
         _selectedCity.value = cityName
     }
 
-    fun removeSelectedCity() {
-        _selectedCity.value?.let { cityName ->
-            removeCity(cityName)
-            Log.d("WeatherCard", "Removed city: $cityName")
-            _selectedCity.value = null // Reset the selected city
-        }
-    }
+//    fun removeSelectedCity() {
+//        _selectedCity.value?.let { cityName ->
+//            removeCity(cityName)
+//            Log.d("WeatherCard", "Removed city: $cityName")
+//            _selectedCity.value = null // Reset the selected city
+//        }
+//    }
 
     fun removeCity(cityName: String) {
         val updatedList = _weatherData.value?.filterNot { it.name == cityName }
@@ -232,7 +232,11 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                         WeatherCard(
                             cityName = weather.name,
                             temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
-                            weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT),
+                            weatherDescription = weather.weather.first().description.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.ROOT
+                                ) else it.toString()
+                            },
                             onCardSelected = { selectedCityName ->
                                 viewModel.selectCity(selectedCityName)
                                 Log.d("WeatherCard", "Selected city: $selectedCityName")
