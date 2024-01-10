@@ -235,7 +235,11 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                     WeatherCard(
                         cityName = weather.name,
                         temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
-                        weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT),
+                        weatherDescription = weather.weather.first().description.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(
+                                Locale.ROOT
+                            ) else it.toString()
+                        },
                         onCardSelected = {}
                     )
                 }
