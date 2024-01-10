@@ -164,13 +164,13 @@ fun LocationPermissionScreen(context:Context,locationStore:LocationStore) {
                         Text("Grant permission")
                     }
                 },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false
-                        val settingsView = Intent(context, Settings::class.java)
-                        context.startActivity(settingsView)}) {
-                        Text("Don't grant permission")
-                    }
-                }
+//                dismissButton = {
+//                    TextButton(onClick = { showDialog = false
+//                        val settingsView = Intent(context, Settings::class.java)
+//                        context.startActivity(settingsView)}) {
+//                        Text("Don't grant permission")
+//                    }
+//                }
             )
         }
 
