@@ -1,4 +1,5 @@
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -23,10 +23,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -142,96 +138,55 @@ fun WeatherCard(
     cityName: String,
     weatherDescription: String,
     temperatureRange: String,
+    onCardSelected: (String) -> Unit
 ) {
-    var cardData by remember { mutableStateOf(listOf(WeatherData(cityName, weatherDescription, temperatureRange))) }
-    var showDialog by remember { mutableStateOf(false) }
-
-    Column {
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(8.dp),
-//            horizontalArrangement = Arrangement.SpaceBetween
-//        ) {
-//            IconButton(
-//                onClick = {
-//                    cardData = cardData + WeatherData("New City", "New Description", "New Temperature")
-//                }
-//            ) {
-//                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-//            }
-//
-//            IconButton(
-//                onClick = {
-//                    if (cardData.isNotEmpty()) {
-//                        showDialog = true
-//                    }
-//                }
-//            ) {
-//                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
-//            }
-//        }
-        cardData.forEach { data ->
-            Card(
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .background(Color.Transparent)
+            .clickable { onCardSelected(cityName) }
+    ) {
+        Box(
+            modifier = Modifier
+                .height(250.dp)
+                .fillMaxWidth()
+                .background(Color.Transparent)
+        ) {
+            // Background image
+            Image(
+                painter = painterResource(id = R.drawable.ic_weather_windy),
+                contentDescription = null,
                 modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth()
-                    .background(Color.Transparent, shape = RoundedCornerShape(10.dp)),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .height(250.dp)
-                        .fillMaxWidth()
-                        .background(Color.Transparent)
-                ) {
-                    // Background image
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_weather_windy),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Transparent),
-                        contentScale = ContentScale.FillWidth
-                    )
-
-                    // Texts positioned at the bottom left of the image
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(start = 16.dp, bottom = 16.dp)
-                    ) {
-                        Text(
-                            text = data.temperatureRange,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(90.dp))
-                        Text(
-                            text = data.weatherDescription,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = data.cityName,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-        }
-
-
-        if (showDialog) {
-            CitySelectionDialog(
-                cities = cardData.map { it.cityName },
-                onDismiss = { showDialog = false },
-                onCitySelected = { index ->
-                    cardData = cardData.filterIndexed { i, _ -> i != index }
-                    showDialog = false
-                }
+                    .fillMaxSize()
+                    .background(Color.Transparent),
+                contentScale = ContentScale.FillWidth
             )
+
+            // Texts positioned at the bottom left of the image
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 16.dp, bottom = 16.dp)
+            ) {
+                Text(
+                    text = temperatureRange,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(90.dp))
+                Text(
+                    text = weatherDescription,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = cityName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Color.White
+                )
+            }
         }
     }
 }
@@ -274,7 +229,8 @@ fun CitySelectionDialog(
                     padding(16.dp)
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.background)
-                } // Use background color from the theme
+                }
+
             ) {
                 Column(
                     modifier = Modifier
@@ -286,6 +242,7 @@ fun CitySelectionDialog(
 
                     cities.forEachIndexed { index, city ->
                         CitySelectionItem(city = city) {
+                            Log.d("onCitySelected", "City has been selected")
                             onCitySelected(index)
                             onDismiss()
                         }

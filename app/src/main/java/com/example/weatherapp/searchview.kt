@@ -7,9 +7,11 @@ import WeatherCard
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +23,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,22 +71,44 @@ class WeatherViewModel : ViewModel() {
     val weatherData: LiveData<List<CurrentWeather>> = _weatherData
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
 
-//    Need to work out how to add more than one card
+    private val _selectedCity = MutableLiveData<String?>()
+    val selectedCity: LiveData<String?> = _selectedCity
+
+    //    Need to work out how to add more than one card
 //    Nee dto work out how to add and remove with the buttons so that they are interactive with the cards
     fun fetchWeatherData(city: String) {
-    viewModelScope.launch {
-        try {
-            val response = apiService.getCurrentWeather(city, "metric", apiKey)
-            if (response.isSuccessful && response.body() != null) {
-                _weatherData.value = _weatherData.value?.plus(response.body()!!)
-            } else {
-                // Handle errors
+        viewModelScope.launch {
+            try {
+                val response = apiService.getCurrentWeather(city, "metric", apiKey)
+                if (response.isSuccessful && response.body() != null) {
+                    _weatherData.value = _weatherData.value?.plus(response.body()!!)
+                } else {
+                    // Handle errors
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
             }
-        } catch (e: Exception) {
-            // Handle exceptions
         }
     }
-}
+
+    fun selectCity(cityName: String) {
+        _selectedCity.value = cityName
+    }
+
+    fun removeSelectedCity() {
+        _selectedCity.value?.let { cityName ->
+            removeCity(cityName)
+            Log.d("WeatherCard", "Removed city: $cityName")
+            _selectedCity.value = null // Reset the selected city
+        }
+    }
+
+    fun removeCity(cityName: String) {
+        val updatedList = _weatherData.value?.filterNot { it.name == cityName }
+        _weatherData.value = updatedList
+        Log.d("WeatherCard", "Selected city: $cityName")
+    }
+
 
 
 }
@@ -165,6 +191,9 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel) {
 @Composable
 fun SearchViewPreview(viewModel: WeatherViewModel) {
     val weatherList by viewModel.weatherData.observeAsState(listOf())
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+
 
     WeatherAppTheme(darkTheme = false) {
         Surface(
@@ -184,34 +213,68 @@ fun SearchViewPreview(viewModel: WeatherViewModel) {
                         // Define the action for the add button
                     },
                     onRemoveClicked = {
-
+                        showDeleteDialog = true
                     }
                 )
-
-                LazyColumn(modifier = Modifier.weight(1f)) {
+                if (showDeleteDialog) {
+                    DeleteLocationDialog(
+                        locations = weatherList, // Assuming this is your list of locations
+                        onDismiss = { showDeleteDialog = false },
+                        onDeleteLocation = { location ->
+                            viewModel.removeCity(location)
+                            showDeleteDialog = false
+                        }
+                    )
+                }
+                // Usage in LazyColumn
+                LazyColumn {
                     items(weatherList) { weather ->
                         WeatherCard(
                             cityName = weather.name,
                             temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
-                            weatherDescription = weather.weather.first().description.replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase(
-                                    Locale.ROOT
-                                ) else it.toString()
+                            weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT),
+                            onCardSelected = { selectedCityName ->
+                                viewModel.selectCity(selectedCityName)
+                                Log.d("WeatherCard", "Selected city: $selectedCityName")
                             }
                         )
-//                        WeatherCard(
-//                            cityName = weather.name,
-//                            temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
-//                            weatherDescription = weather.weather.first().description.capitalize(Locale.ROOT)
-//                        )
                     }
                 }
+
             }
         }
     }
 }
 
-
+@Composable
+fun DeleteLocationDialog(
+    locations: List<CurrentWeather>,
+    onDismiss: () -> Unit,
+    onDeleteLocation: (String) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = { Text("Delete Location") },
+        text = {
+            LazyColumn {
+                items(locations) { location ->
+                    Text(
+                        text = location.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable { onDeleteLocation(location.name) }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
 
 //@Preview(showBackground = true)
 //@Composable
