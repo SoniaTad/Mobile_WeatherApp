@@ -1,48 +1,39 @@
 package com.example.weatherapp
 
 import LocationStore
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.LocationManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.fillMaxSize
+
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
+
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.weatherapp.ui.theme.WeatherAppTheme
-
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-
 
 class EnableLocation : ComponentActivity() {
     private val locationStore by lazy { LocationStore(this) }
@@ -50,141 +41,156 @@ class EnableLocation : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
 
-            LocationPermissionScreen(this,locationStore)
+            LocationScreen(locationStore)
         }
     }
 }
 
+
 @Composable
-fun LocationPermissionScreen(context:Context,locationStore:LocationStore) {
+fun LocationScreen(locationStore:LocationStore) {
+    val context = LocalContext.current
+    var location by remember { mutableStateOf("Your location") }
     val locationPermissionGranted = remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
-
     val coroutine = rememberCoroutineScope()
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted: Boolean ->
-            //the app has been granted the necessary permissions
-            if (isGranted) {
-                // Permission granted, proceed to the next activity
-                //val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                val location = if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
+    // Create a permission launcher
+    val requestPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { isGranted: Boolean ->
+                if (isGranted) {
+                    // Permission granted, update the location
+                    getCurrentLocation(context) { latitude, longitude ->
+                        location = "Latitude: $latitude, Longitude: $longitude"
+                        coroutine.launch {
+                            withContext(Dispatchers.IO) {
+                                locationStore.saveLoc(context, enabled = true)
 
-                    Toast.makeText(context, "I'm here ", Toast.LENGTH_SHORT).show()
-                    coroutine.launch {
-                        withContext(Dispatchers.IO) {
-                            locationStore.saveLoc(context, enabled = false)
-                        }
-                        locationStore.getLocation.collect { enabled ->
+                                locationStore.saveDetails(context, latitude, longitude)
+                                //might need to add function to retrieve the details
 
-                            locationPermissionGranted.value = enabled
-                        }
-                    }
-                    // Ask for permission
-                    return@rememberLauncherForActivityResult
-                } else {
+                            }
+                            locationStore.getLocation.collect { enabled ->
+
+                                locationPermissionGranted.value = enabled}
+                        }}
 
 
-
-                    locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                   //fusedLocationClient.lastLocation
 
                 }
-                //location.addOnSuccessListener {  lo ->}
-                if (location != null) {
-                    val latitude = location.latitude
-                    val longitude = location.longitude
-                    Toast.makeText(context, "Location is has a latitude of $latitude and longitude of $longitude", Toast.LENGTH_SHORT).show()
+            })
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
 
-                coroutine.launch {
-                    withContext(Dispatchers.IO) {
-                        locationStore.saveLoc(context, enabled = true)
-
-                                locationStore.saveDetails(context,latitude,longitude)
-                        //might need to add function to retrieve the details
-
-                        }
-                    }
-                }else{ //if location is null
-                    Toast.makeText(context, "Location is null ", Toast.LENGTH_SHORT).show()}
-
-            } else {
-                
-                Toast.makeText(context, "Error permission has not been granted", Toast.LENGTH_SHORT).show()
-                coroutine.launch {
-                    withContext(Dispatchers.IO) {
-                        locationStore.saveLoc(context, enabled = false)}}
-                // send to search view
-            }
-        }
-    )
-    //if false
-    if (!locationPermissionGranted.value) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.LightGray),
-            contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Enable Location Services")
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(text = "To continue using the app, please enable location services.")
-                Spacer(modifier = Modifier.height(32.dp))
-                Button(onClick = { showDialog = true }) {
-                    Text(text = "Enable Location")
-                }
-            }
-        }
-
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text("Enable Location Services") },
-                text = { Text("Do you want to enable location services now or later?") },
-                confirmButton = {
-                    TextButton(
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Importance of Location Enabling",
+                    //style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Text(
+                    text = "Enabling location allows the app to provide you with personalized services and features based on your current location. It helps in providing accurate information, nearby recommendations, and location-based notifications.",
+                    //style = MaterialTheme.typography.body1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
                         onClick = {
-                            showDialog = false
-                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            coroutine.launch {
-                                withContext(Dispatchers.IO) {
-                                    locationStore.saveLoc(context, enabled = true)}}
+                            if (hasLocationPermission(context)) {
+                                // Permission already granted, update the location
+                                getCurrentLocation(context) { lat, long ->
+                                    location = "Latitude: $lat, Longitude: $long"
+                                    coroutine.launch {
+                                        withContext(Dispatchers.IO) {
+                                            locationStore.saveLoc(context, enabled = true)
+
+                                            locationStore.saveDetails(context, lat, long)
+                                            
+
+                                        }
+                                        locationStore.getLocation.collect { enabled ->
+
+                                            locationPermissionGranted.value = enabled}
+                                    }
+                                }
+                                context.startActivity(Intent(context,MainActivity::class.java))
+                            } else {
+                                // Request location permission
+                                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            }
+                        },
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text(text = "Allow")
+                    }
+                    Button(
+                        onClick = {
+                            context.startActivity(Intent(context, Settings::class.java))
                         }
                     ) {
-                        Text("Grant permission")
+                        Text(text = "Don't Allow")
                     }
-                },
-//                dismissButton = {
-//                    TextButton(onClick = { showDialog = false
-//                        val settingsView = Intent(context, Settings::class.java)
-//                        context.startActivity(settingsView)}) {
-//                        Text("Don't grant permission")
-//                    }
-//                }
-            )
+                }
+            }
         }
-
-
-    } else {
-        // Permission already granted, proceed to the next activity
-        // Get the latitude and longitude here
-        Button(onClick = {   val pass = Intent(context, MainActivity::class.java)
-            context.startActivity(pass)}) {
-            Text(text = "go to next activity")
-        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = location)
+        Text(text= "${locationPermissionGranted.value}")
     }
+}
 
+private fun hasLocationPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED
+}
 
+private fun getCurrentLocation(context: Context, callback: (Double, Double) -> Unit) {
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    if (ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+    ) {
+
+        return
+    }
+    fusedLocationClient.lastLocation
+        .addOnSuccessListener { location ->
+            if (location != null) {
+                val latitude = location.latitude
+                val longitude = location.longitude
+                callback(latitude, longitude)
+            }
+        }
+        .addOnFailureListener { exception ->
+            // Handle location retrieval failure
+            exception.printStackTrace()
+        }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
@@ -192,7 +198,7 @@ fun LocationPermissionScreen(context:Context,locationStore:LocationStore) {
 fun Location() {
     WeatherAppTheme {
         val context= LocalContext.current
-        LocationPermissionScreen(context,LocationStore(context))
+
+        LocationScreen(locationStore = LocationStore(context))
     }
 }
-
