@@ -12,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -73,13 +74,10 @@ class WeatherViewModel : ViewModel() {
     val weatherData: LiveData<List<CurrentWeather>> = _weatherData
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
     private val _selectedCity = MutableLiveData<String?>()
-
     // Function to update LiveData with a new weather item
     fun updateWeatherData(newWeather: CurrentWeather) {
-
         _weatherData.value = _weatherData.value?.plus(newWeather)
     }
-
     fun fetchWeatherData(city: String) {
         viewModelScope.launch {
             try {
@@ -98,15 +96,11 @@ class WeatherViewModel : ViewModel() {
     fun selectCity(cityName: String) {
         _selectedCity.value = cityName
     }
-
-
     fun removeCity(cityName: String) {
         val updatedList = _weatherData.value?.filterNot { it.name == cityName }
         _weatherData.value = updatedList
         Log.d("WeatherCard", "Selected city: $cityName")
     }
-
-
     fun fetchWeatherDataForPreview(city: String, onResult: (CurrentWeather) -> Unit) {
         viewModelScope.launch {
             try {
@@ -121,7 +115,6 @@ class WeatherViewModel : ViewModel() {
         }
     }
 }
-
 @Composable
 fun SearchViewBackArrowButton(context: Context) {
     IconButton( // navigating to main view
@@ -133,12 +126,13 @@ fun SearchViewBackArrowButton(context: Context) {
     }
 }
 
-//@Preview
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
+
     OutlinedTextField(
         value = query,
         onValueChange = {
@@ -151,7 +145,6 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
             if (query.isNotEmpty()) {
-                // Instead of fetching data immediately, notify the caller about the change
                 onQueryChanged(query)
                 active = false
             }
@@ -160,20 +153,15 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
             Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
         },
         trailingIcon = {
-            IconButton(
-                onClick = {
-                    if (active) {
+            Row {
+                IconButton(
+                    onClick = {
                         query = ""
-                    } else {
-                        // Perform an action when the search bar is not active
-                        // For example, open a dialog, navigate to another screen, etc.
+                        active = false
                     }
+                ) {
+                    Icon(imageVector = Icons.Filled.Close, contentDescription = "Close")
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = if (active) "Close" else "close"
-                )
             }
         },
         modifier = Modifier
@@ -181,7 +169,6 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
             .padding(horizontal = 16.dp)
     )
 }
-
 
 @Composable
 fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
@@ -212,7 +199,6 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                         previewWeather = null
                     }
                 }
-
                 // Show the preview card if there is data
                 if (previewWeather != null && previewQuery.isNotEmpty()) {
                     WeatherCard(
@@ -224,7 +210,6 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                         onCardSelected = {} // Add your logic for card selection here if needed
                     )
                 }
-
                 // Place Add and Remove buttons here
                 AddRemoveWeatherButtons(
                     onAddClicked = {
@@ -239,9 +224,6 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                                 if (isCityAdded) {
                                     // City successfully added, update the LiveData so that the UI gets notified
                                     viewModel.updateWeatherData(weatherData)
-                                } else {
-                                    // Handle the case where the city was not added
-                                    // You can show a message or perform other actions
                                 }
                             }
                         }
