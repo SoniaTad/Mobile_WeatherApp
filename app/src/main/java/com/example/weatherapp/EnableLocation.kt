@@ -37,22 +37,28 @@ import kotlinx.coroutines.withContext
 
 class EnableLocation : ComponentActivity() {
     private val locationStore by lazy { LocationStore(this) }
+    private val userStore by lazy { UserStore(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
 
-            LocationScreen(locationStore)
+            LocationScreen(locationStore,userStore)
         }
     }
 }
 
 
 @Composable
-fun LocationScreen(locationStore:LocationStore) {
+fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
+
+
     val context = LocalContext.current
     var location by remember { mutableStateOf("Your location") }
     val locationPermissionGranted = remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
+    val userNameText = remember { mutableStateOf("") }
+    val radioButtonOptionText = remember { mutableStateOf(RadioButtonOption.LessThanTen) }
+
+    //val locationPermissionGranted by remember { mutableStateOf(locationPerm.value) }
     val coroutine = rememberCoroutineScope()
     // Create a permission launcher
     val requestPermissionLauncher =
@@ -99,14 +105,14 @@ fun LocationScreen(locationStore:LocationStore) {
             ) {
                 Text(
                     text = "Importance of Location Enabling",
-                    //style = MaterialTheme.typography.h6,
+
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Text(
                     text = "Enabling location allows the app to provide you with personalized services and features based on your current location. It helps in providing accurate information, nearby recommendations, and location-based notifications.",
-                    //style = MaterialTheme.typography.body1,
+
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -125,19 +131,22 @@ fun LocationScreen(locationStore:LocationStore) {
                                             locationStore.saveLoc(context, enabled = true)
 
                                             locationStore.saveDetails(context, lat, long)
-                                            
+
 
                                         }
                                         locationStore.getLocation.collect { enabled ->
 
                                             locationPermissionGranted.value = enabled}
+
                                     }
                                 }
+
                                 context.startActivity(Intent(context,MainActivity::class.java))
                             } else {
                                 // Request location permission
                                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             }
+                            context.startActivity(Intent(context, Settings::class.java))
                         },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
@@ -145,7 +154,7 @@ fun LocationScreen(locationStore:LocationStore) {
                     }
                     Button(
                         onClick = {
-//                            context.startActivity(Intent(context, Settings::class.java))
+                            context.startActivity(Intent(context, Settings::class.java))
                         }
                     ) {
                         Text(text = "Don't Allow")
@@ -199,6 +208,6 @@ fun Location() {
     WeatherAppTheme {
         val context= LocalContext.current
 
-        LocationScreen(locationStore = LocationStore(context))
+        LocationScreen(locationStore = LocationStore(context), userStore = UserStore(context))
     }
 }
