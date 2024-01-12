@@ -92,7 +92,6 @@ class MainActivity : ComponentActivity() {
 
 
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,7 +162,7 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
                             .padding(30.dp)) {
 
 
-                          LazyColumnWithCards()
+                          LazyColumnWithCards(humidity, sunrise, sunset, windSpeed, airPressure)
                         }
 
                     }
@@ -248,12 +247,6 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
                         letterSpacing = 0.37.sp,
                     )
                 )
-                // Add weather details content
-                Text(text = "Wind Speed: $windSpeed")
-                Text(text = "Sunrise: $sunrise")
-                Text(text = "Sunset: $sunset")
-                Text(text = "Air Pressure: $airPressure")
-                Text(text = "Humidity: $humidity")
             }
 
         }
@@ -344,13 +337,14 @@ fun CardItem(icon: Painter, text: String) {
 }
 
 @Composable
-fun LazyColumnWithCards() {
+fun LazyColumnWithCards(humidity: String, sunrise: String, sunset: String, windSpeed: String, airPressure: String) {
     val cardItems = listOf(
-        CardItemData(icon = painterResource(id = R.drawable.ic_sunny), text = "Sunny"),
-        CardItemData(icon = painterResource(id = R.drawable.ic_rainy), text = "Rainy"),
-        CardItemData(icon = painterResource(id = R.drawable.ic_cloudy), text = "Cloudy"),
-        CardItemData(icon = painterResource(id = R.drawable.ic_snow), text = "Snow"),
-        CardItemData(icon = painterResource(id = R.drawable.ic_thunder), text = "Storm")
+        CardItemData(icon = painterResource(id = R.drawable.ic_wind), text = "Wind Speed: $windSpeed"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_sunrise), text = "Sunrise: $sunrise"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_sunset), text = "Sunset: $sunset"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_pressure), text = "Air Pressure: $airPressure"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_humidity), text = "Humidity: $humidity")
+                // Add weather details content
     )
 
     LazyColumn {
@@ -366,6 +360,6 @@ data class CardItemData(val icon: Painter, val text: String)
 @Composable
 fun GreetingPreview() {
     WeatherAppTheme {
-        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1", sunrise = "ok", sunset = "ok", humidity = "ok", airPressure = "test", windSpeed = "0-1")
+        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1",sunrise = "00:00",sunset = "00:00", windSpeed = "0", airPressure = "0", humidity = "")
     }
 }

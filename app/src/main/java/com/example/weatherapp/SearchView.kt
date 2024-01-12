@@ -113,12 +113,6 @@ class WeatherViewModel : ViewModel() {
                 val response = apiService.getCurrentWeather(city, "metric", apiKey)
                 if (response.isSuccessful && response.body() != null) {
                     val weatherData = response.body()!!
-                    // Extract additional data
-                    val humidity = weatherData.main.humidity
-                    val sunrise = weatherData.sys.sunrise
-                    val sunset = weatherData.sys.sunset
-                    val windSpeed = weatherData.wind.speed
-                    val airPressure = weatherData.main.pressure
                     // Call onResult with the weather data
                     onResult(weatherData)
                 }
