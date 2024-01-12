@@ -1,6 +1,7 @@
 package com.example.weatherapp
 
-import android.content.Context
+import android.annotation.SuppressLint
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -39,48 +40,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+
 import com.example.weatherapp.ui.theme.WeatherAppTheme
-import com.example.weatherapp.MainActivity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class RadioButtonOption {
-    LessThanTwenty,
-    LessThanTen,
-    LessThanFive
-}
-class UserStore(private val context: Context) {
-    companion object {
-        val Context.dataStore: DataStore<Preferences> by preferencesDataStore("userPref")
-        val User = stringPreferencesKey("user_name")
-        val q1 =   stringPreferencesKey("radio_button_option")
 
 
-    }
-    // read operation
-
-    val getPref: Flow<Pair<String, RadioButtonOption>> = context.dataStore.data
-        .map { preferences ->
-            val radioButtonOption=RadioButtonOption.valueOf(preferences[q1] ?: RadioButtonOption.LessThanTen.name)
-            val userName=preferences[User] ?:""
-            Pair(userName, radioButtonOption)
-        }
-    suspend fun savePref(userName: String, radioButtonOption: RadioButtonOption) {
-        context.dataStore.edit { preferences ->
-            preferences[User] = userName
-            preferences[q1] = radioButtonOption.name
-        }
-    }
-}
 
 class LogoPage : ComponentActivity() {
     private val userStore by lazy { UserStore(this) }
@@ -103,21 +73,22 @@ class LogoPage : ComponentActivity() {
 }
 
 
-    // creating a class that takes the user's name and their answer and the question to ask
 
 
 
+
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun UserPreferencesDialog(userStore: UserStore){
-     //question1: String = stringResource(R.string.Question1)
 
-//onSavePreferences:( preferences:UserPreferences) -> Unit
 
     val radioButtonOption = remember { mutableStateOf(RadioButtonOption.LessThanTen) }
     val (selectedOption,onOptionSelected) = remember { mutableStateOf(RadioButtonOption.entries.first()) }
     var userName by remember { mutableStateOf("") }
     val coroutine = rememberCoroutineScope()
     //val openDialog = remember { mutableStateOf(true) }
+    var inputError by mutableStateOf(false)
+
     val context = LocalContext.current
     val (data, setData) = remember { mutableStateOf("") }
     val showDialog = remember { mutableStateOf(false) }
@@ -138,14 +109,23 @@ fun UserPreferencesDialog(userStore: UserStore){
             text = {
                 Column {
                     Text(text = "Insert your name")
-                    (Spacer(modifier = Modifier.height(10.dp)))
+                    Spacer(modifier = Modifier.height(10.dp))
                     TextField(
                         value = userName,
-                        onValueChange = { userName = it },
+                        onValueChange = { input ->
+                            userName = input
+                            inputError = input.isBlank() // Example validation: check if the input is blank
+                        },
                         label = { Text("Name") },
-                        //keyboardOptions =
-
                     )
+
+                    if (inputError) {
+                        Text(
+                            text = "Please enter a valid name",
+                            color = Color.Red,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
                     Column {
                         (Spacer(modifier = Modifier.height(10.dp)))
 
@@ -172,9 +152,14 @@ fun UserPreferencesDialog(userStore: UserStore){
             confirmButton = {
                 Button(
                     onClick = {
+                        val selectedUserName: String
                         //getting the data gathered from user input and creating variables to store them
-                        val selectedUserName = userName
+                        //checking that userName is not null
+                        if(userName.isBlank()){ selectedUserName="User"}
+                        else{
+                         selectedUserName = userName}
                         val finalOption = selectedOption
+
                         //calling the read and write functions of the datastore to save and retrieve the data required
                         coroutine.launch{
                             withContext(Dispatchers.IO) {
@@ -182,7 +167,6 @@ fun UserPreferencesDialog(userStore: UserStore){
                             val (name, option) = userStore.getPref.first()
                             setData("User Name: $name\nRadio Button Option: $option")
                             showDialog.value = true}
-                        //openDialog.value = false
                     }
                 ) {
                     Text(text = "Save")
@@ -190,8 +174,17 @@ fun UserPreferencesDialog(userStore: UserStore){
                 if (showDialog.value) {
                     Dialog(onDismissRequest = { showDialog.value = false }) {
                         DisplayDataDialog(data = data,
-                            onClose = { showDialog.value = false
-                            context.startActivity(Intent(context, MainActivity::class.java))})
+                            onClose = {
+                                showDialog.value = false
+                            //context.startActivity(Intent(context, MainActivity::class.java))
+                                // this is to send user pref to the settings activity
+                                val firstIntent = Intent(context, Settings::class.java)
+
+                                context.startActivity(firstIntent)
+
+
+
+                            })
                     }
                 }
             },
