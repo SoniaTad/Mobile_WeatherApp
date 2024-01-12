@@ -1,8 +1,9 @@
 package com.example.weatherapp
+
+
+import LocationStore
 import android.content.Intent
 import android.os.Bundle
-
-
 import androidx.compose.material3.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,23 +11,23 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-
-
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberCoroutineScope
+
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,22 +35,27 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 
+import kotlinx.coroutines.launch
+
 
 class UserPreferences : ComponentActivity() {
+    private val locationStore by lazy { LocationStore(this) }
+    private val userStore by lazy { UserStore(this) }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContent {
             WeatherAppTheme {
-                // A surface container using the 'background' color from the theme
+
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color(0xFFB88DD3)),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Images()
+                    Images(locationStore,userStore)
 
                 }
             }
@@ -59,12 +65,7 @@ class UserPreferences : ComponentActivity() {
     }
 
     //here add private function
-    private fun navigateToMainPageAfterDelay() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish()
 
-    }
 }
 
 @Composable
@@ -76,10 +77,18 @@ fun greeting():Boolean {
 
 }
 @Composable
-fun Images() {
+fun Images(locationStore: LocationStore,userStore:UserStore) {
+    val userNameText = remember { mutableStateOf("") }
+    val radioButtonOptionText = remember { mutableStateOf(RadioButtonOption.LessThanTen) }
 
+    val locationPermissionGranted = remember { mutableStateOf(true) }
+
+    val latitude = remember { mutableDoubleStateOf(0.0) }
+    val longitude= remember { mutableDoubleStateOf(0.0) }
+    val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
     val image = painterResource(R.drawable.logo_foreground)
+
     Column(
         modifier = Modifier.fillMaxSize()
             .background(color= Color(0xFFB88DD3)),
@@ -94,8 +103,40 @@ fun Images() {
                 .size(700.dp)
                 .background(color = Color(0xFFB88DD3))
         )
-        Button(onClick = { context.startActivity(Intent(context, MainActivity::class.java)) }) {
-            Text(text = "Go to Main Page")
+        Button(onClick = { // getting the value of enabled and assign it to the variable
+            // then decide which activity to go to next
+            coroutine.launch {
+                locationStore.getLocation.collect { enabled ->
+
+                    locationPermissionGranted.value = enabled}
+                locationStore.getLatitude.collect{lat ->
+                    latitude.doubleValue = lat }
+                locationStore.getLongitude.collect{long ->
+                    longitude.doubleValue = long }
+                userStore.getPref.collect { (userName, radioButtonOption) ->
+                    // Update the text values
+                    userNameText.value = userName
+                    radioButtonOptionText.value = radioButtonOption
+                }
+
+
+            }// if location is enabled then check whether lat and long aren't 0.0
+            if(locationPermissionGranted.value)
+            {
+                if(latitude.doubleValue==0.0 && longitude.doubleValue==0.0)
+                {
+                    context.startActivity(Intent(context, EnableLocation::class.java))
+                }
+                else{ if(userNameText.value=="User"){
+                    context.startActivity(Intent(context, LogoPage::class.java))
+                }else{
+                    context.startActivity(Intent(context, MainActivity::class.java))}
+                }}
+            else{  // location is not enabled
+            context.startActivity(Intent(context, EnableLocation::class.java)) }
+        }
+        ) {
+            Text(text = "Hello!")
         }
 
     }
@@ -111,6 +152,8 @@ fun GreetingPreview2() {
 @Composable
 fun ImagesPreview() {
     WeatherAppTheme {
-        Images()
+        val context =  LocalContext.current
+        Images(locationStore = LocationStore(context), userStore = UserStore(context ))
     }
+
 }
