@@ -158,11 +158,20 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
             if (query.isNotEmpty()) {
-//                onQueryChanged(query)
-                val intent = Intent(context, MainActivity::class.java)
-                intent.putExtra("CITY_NAME_KEY", query) // Pass city name to MainActivity
-                context.startActivity(intent)
-                active = false
+                viewModel.fetchWeatherDataForPreview(query) { weatherData ->
+                    // Get the temperature range from the fetched weather data
+                    val temperatureRange = "${weatherData.main.temp_min.toInt()}°C - ${weatherData.main.temp_max.toInt()}°C"
+
+                    // Create the Intent to start MainActivity and pass the temperature range
+                    val intent = Intent(context, MainActivity::class.java).apply {
+                        putExtra("CITY_NAME_KEY", weatherData.name) // Pass city name to MainActivity
+                        putExtra("TEMPERATURE_RANGE_KEY", temperatureRange) // Pass temperature range to MainActivity
+                    }
+
+                    // Start MainActivity
+                    context.startActivity(intent)
+                    active = false
+                }
             }
         }),
         leadingIcon = {

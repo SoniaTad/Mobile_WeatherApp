@@ -44,6 +44,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,15 +70,16 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Unknown City"
+        val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Bristol"
+        val temperatureRange = intent.getStringExtra("TEMPERATURE_RANGE_KEY") ?: "0 - 1"
 
         setContent {
             WeatherAppTheme {
-              
+                val weatherData by viewModel.weatherData.observeAsState(initial = listOf())
 
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
                 {
-                    PurpleActivityMaterial3(cityName)
+                    PurpleActivityMaterial3(cityName, temperatureRange)
                 }
             }
         }
@@ -90,7 +92,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PurpleActivityMaterial3(cityName: String) {
+fun PurpleActivityMaterial3(cityName: String, temperatureRange: String) {
 
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
@@ -227,6 +229,22 @@ fun PurpleActivityMaterial3(cityName: String) {
                         letterSpacing = 0.37.sp,
                     )
                 )
+
+                Text(
+                    text = "Temperature: $temperatureRange",
+                    // Styling for the temperature text
+                    Modifier
+                        .width(200.dp)
+                        .height(50.dp),
+                    style = TextStyle(
+                        fontSize = 20.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight(400),
+                        color = Color(0xFFF7F2FA),
+                        textAlign = TextAlign.Center,
+                        letterSpacing = 0.37.sp,
+                    )
+                )
                 // Add weather details content
             }
         }
@@ -334,6 +352,6 @@ data class CardItemData(val icon: Painter, val text: String)
 @Composable
 fun GreetingPreview() {
     WeatherAppTheme {
-        PurpleActivityMaterial3(cityName = "Sample City")
+        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1")
     }
 }
