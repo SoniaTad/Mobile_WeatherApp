@@ -100,6 +100,7 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
     //val sheetState = rememberModalBottomSheetState()
     var optionalHandlerClicked by remember { mutableStateOf(false) }
     var currentListState = remember { mutableStateOf(hours) }
+    var currentListState2 = remember { mutableStateOf(hours_temp) }
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -128,6 +129,7 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
                         Row( verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 6.dp, horizontal = 40.dp)) {
                             ElevatedButton(onClick = {currentListState.value= weeks
+                                 currentListState2.value= week_temp
 
 
                                                      },modifier= Modifier
@@ -136,7 +138,8 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
                                 Text("Weekly",modifier=Modifier.width(90.dp))
                             }
                             (Spacer(modifier = Modifier.width(120.dp)))
-                            ElevatedButton(onClick = { currentListState.value= hours},modifier= Modifier
+                            ElevatedButton(onClick = { currentListState.value= hours
+                             currentListState2.value= hours_temp},modifier= Modifier
                                 .width(90.dp)
                                 .height(35.dp)) {
                                 Text("Daily",modifier=Modifier.width(90.dp))}
@@ -152,8 +155,8 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity
 
                        //run { scope.launch { scaffoldState.bottomSheetState.partialExpand() }}
                         (Spacer(modifier = Modifier.height(20.dp)))
-                        //App()
-                        intermidiete(currentListState)
+                        
+                        intermidiete(currentListState,currentListState2)
                         (Spacer(modifier = Modifier.height(20.dp)))
                         Box( modifier= Modifier
                             .width(390.dp)
@@ -264,7 +267,7 @@ fun WeatherDetailCard(title: String, value: String) {
 //val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
 @Composable
 // this is for the row for daily forecast
-fun HourlySchedule(hours:List<String>) {
+fun HourlySchedule(hours:List<String>,hours_temp:List<String>) {
 
         LazyRow(contentPadding = PaddingValues(horizontal = 4.dp),
         //reverseLayout=true,
@@ -272,7 +275,7 @@ fun HourlySchedule(hours:List<String>) {
             )
 
         {
-            itemsIndexed(hours) { index, hour ->
+             itemsIndexed(hours.zip(hours_temp)) { index, (hour, temp) ->
                 Card(
                     modifier = Modifier
                         .width(90.dp)
@@ -297,17 +300,19 @@ fun HourlySchedule(hours:List<String>) {
 
 val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
 val weeks = listOf("Mon","Tue","Wed")
+val hours_temp= listOf("3","3","3","3","3","3","3")
+val week_temp= listOf("4","4","5","6","3","3","3")
 @Composable
-fun App(hours: List<String>){
+fun App(hours: List<String>,hours_temp: List<String>){
 
     //val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
-    HourlySchedule(hours = hours)
+    HourlySchedule(hours = hours,hours_temp=hours_temp)
 
 }
 @Composable
-fun intermidiete(currentListState: MutableState<List<String>>){
+fun intermidiete(currentListState: MutableState<List<String>>,currentListState2:MutableState<List<String>>){
 
-    App(currentListState.value)
+    App(currentListState.value,currentListState2.value)
 
 
 }
