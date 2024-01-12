@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,9 +27,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BottomSheetScaffold
@@ -53,8 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -66,15 +65,19 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: WeatherViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Unknown City"
+
         setContent {
             WeatherAppTheme {
               
 
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
                 {
-                    PurpleActivityMaterial3()
+                    PurpleActivityMaterial3(cityName)
                 }
             }
         }
@@ -87,7 +90,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PurpleActivityMaterial3() {
+fun PurpleActivityMaterial3(cityName: String) {
 
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
@@ -210,7 +213,7 @@ fun PurpleActivityMaterial3() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Bristol",
+                    text = cityName,
                     Modifier
                         .width(200.dp)
                         .height(41.dp),
@@ -286,7 +289,7 @@ fun intermidiete(currentListState: MutableState<List<String>>){
 
 
 @Composable
-fun CardItem(icon: ImageVector, text: String) {
+fun CardItem(icon: Painter, text: String) {
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -298,7 +301,7 @@ fun CardItem(icon: ImageVector, text: String) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = null, // Add appropriate content description
                 modifier = Modifier.size(24.dp)
             )
@@ -311,11 +314,11 @@ fun CardItem(icon: ImageVector, text: String) {
 @Composable
 fun LazyColumnWithCards() {
     val cardItems = listOf(
-        CardItemData(icon = Icons.Filled.Home , text = "Home"),
-        CardItemData(icon = Icons.Default.Favorite, text = "Favorite"),
-        CardItemData(icon = Icons.Default.Settings, text = "Settings"),
-        CardItemData(icon = Icons.Default.Person, text = "Profile"),
-        CardItemData(icon = Icons.Default.Search, text = "Search")
+        CardItemData(icon = painterResource(id = R.drawable.ic_sunny), text = "Sunny"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_rainy), text = "Rainy"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_cloudy), text = "Cloudy"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_snow), text = "Snow"),
+        CardItemData(icon = painterResource(id = R.drawable.ic_thunder), text = "Storm")
     )
 
     LazyColumn {
@@ -325,12 +328,12 @@ fun LazyColumnWithCards() {
     }
 }
 
-data class CardItemData(val icon: ImageVector, val text: String)
+data class CardItemData(val icon: Painter, val text: String)
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun GreetingPreview() {
     WeatherAppTheme {
-        PurpleActivityMaterial3()
+        PurpleActivityMaterial3(cityName = "Sample City")
     }
 }

@@ -74,6 +74,9 @@ class WeatherViewModel : ViewModel() {
     val weatherData: LiveData<List<CurrentWeather>> = _weatherData
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
     private val _selectedCity = MutableLiveData<String?>()
+
+    private val _searchQuery = MutableLiveData<String>()
+    val searchQuery: LiveData<String> = _searchQuery
     // Function to update LiveData with a new weather item
     fun updateWeatherData(newWeather: CurrentWeather) {
         _weatherData.value = _weatherData.value?.plus(newWeather)
@@ -81,9 +84,10 @@ class WeatherViewModel : ViewModel() {
     fun fetchWeatherData(city: String) {
         viewModelScope.launch {
             try {
+                _weatherData.value = listOf()
                 val response = apiService.getCurrentWeather(city, "metric", apiKey)
                 if (response.isSuccessful && response.body() != null) {
-                    _weatherData.value = _weatherData.value?.plus(response.body()!!)
+                    _weatherData.value = listOf(response.body()!!)
                 } else {
                     // Handle errors
                 }
@@ -114,6 +118,14 @@ class WeatherViewModel : ViewModel() {
             }
         }
     }
+
+    init {
+        searchQuery.observeForever { newQuery ->
+            if (newQuery.isNotEmpty()) {
+                fetchWeatherData(newQuery)
+            }
+        }
+    }
 }
 @Composable
 fun SearchViewBackArrowButton(context: Context) {
@@ -132,6 +144,7 @@ fun SearchViewBackArrowButton(context: Context) {
 fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     OutlinedTextField(
         value = query,
@@ -145,7 +158,10 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
             if (query.isNotEmpty()) {
-                onQueryChanged(query)
+//                onQueryChanged(query)
+                val intent = Intent(context, MainActivity::class.java)
+                intent.putExtra("CITY_NAME_KEY", query) // Pass city name to MainActivity
+                context.startActivity(intent)
                 active = false
             }
         }),
