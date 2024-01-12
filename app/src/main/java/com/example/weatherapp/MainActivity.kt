@@ -377,6 +377,7 @@ data class CardItemData(val icon: Painter, val text: String)
 @Composable
 fun GreetingPreview() {
     WeatherAppTheme {
-        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1",sunrise = "00:00",sunset = "00:00", windSpeed = "0", airPressure = "0", humidity = "")
+         val context = LocalContext.current
+        PurpleActivityMaterial3(locationStore = LocationStore(context),cityName = "Sample City", temperatureRange = "0 - 1",sunrise = "00:00",sunset = "00:00", windSpeed = "0", airPressure = "0", humidity = "")
     }
 }
