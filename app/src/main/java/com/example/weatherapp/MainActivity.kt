@@ -67,7 +67,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val viewModel: WeatherViewModel by viewModels()
-
+    private val locationStore by lazy { LocationStore(this) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Bristol"
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
 
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
                 {
-                    PurpleActivityMaterial3(cityName, temperatureRange, humidity, sunrise, sunset, windSpeed, airPressure)
+                    PurpleActivityMaterial3(locationStore,cityName, temperatureRange, humidity, sunrise, sunset, windSpeed, airPressure)
                 }
             }
         }
@@ -95,9 +95,21 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity: String, sunrise: String, sunset: String, windSpeed: String, airPressure: String) {
+fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, temperatureRange: String, humidity: String, sunrise: String, sunset: String, windSpeed: String, airPressure: String) {
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
+     val latitude = remember { mutableDoubleStateOf(0.0) }
+    val longitude = remember { mutableDoubleStateOf(0.0) }
+    LaunchedEffect(Unit) {
+        locationStore.getLatitude.collect { lat ->
+            latitude.value = lat
+        }
+    }
+    LaunchedEffect(Unit) {
+        locationStore.getLongitude.collect { long ->
+            longitude.value = long
+        }
+    }
     var optionalHandlerClicked by remember { mutableStateOf(false) }
     var currentListState = remember { mutableStateOf(hours) }
     var currentListState2 = remember { mutableStateOf(hours_temp) }
