@@ -1,8 +1,6 @@
 package com.example.weatherapp
 
-//newsearchview
 // Contents of the file (e.g., class, object, function)
-import com.example.weatherapp.CityStore
 import AddRemoveWeatherButtons
 import WeatherCard
 import android.content.Context
@@ -35,11 +33,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +56,6 @@ import com.example.weatherapp.utils.RetrofitInstance
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-
-
-
 class SearchView : ComponentActivity() {
     private val viewModel: WeatherViewModel by viewModels()
     private val cityStore: CityStore by lazy { CityStore(context = this) }
@@ -67,50 +64,22 @@ class SearchView : ComponentActivity() {
         setContent {
             SearchViewPreview(viewModel, cityStore)
         }
-        viewModel.loadFavoriteCities(cityStore)
     }
-
-
-
-
 }
-
-
-
 
 class WeatherViewModel : ViewModel() {
     private val apiService = RetrofitInstance.create()
     private val _weatherData = MutableLiveData<List<CurrentWeather>>(listOf())
     val weatherData: LiveData<List<CurrentWeather>> = _weatherData
     private val apiKey: String = "63a7e436b523ae004cb898b99918ff61"
-    private val _favoriteCities = MutableLiveData<Set<String>>(setOf())
-    val favoriteCities: LiveData<Set<String>> = _favoriteCities
+    private val _selectedCity = MutableLiveData<String?>()
 
+    // Function to update LiveData with a new weather item
+    fun updateWeatherData(newWeather: CurrentWeather) {
 
-
-
-    fun loadFavoriteCities(cityStore: CityStore) {
-        viewModelScope.launch {
-            _favoriteCities.value = cityStore.getFavoriteCities()
-            Log.d("WeatherViewModel", "Loaded cities: ${_favoriteCities.value}")
-        }
+        _weatherData.value = _weatherData.value?.plus(newWeather)
     }
 
-
-
-
-    private val _selectedCity = MutableLiveData<String?>()
-//    val selectedCity: LiveData<String?> = _selectedCity
-
-
-
-
-
-
-
-
-    //    Need to work out how to add more than one card
-//    Nee dto work out how to add and remove with the buttons so that they are interactive with the cards
     fun fetchWeatherData(city: String) {
         viewModelScope.launch {
             try {
@@ -126,18 +95,9 @@ class WeatherViewModel : ViewModel() {
         }
     }
 
-
-
-
     fun selectCity(cityName: String) {
         _selectedCity.value = cityName
     }
-
-
-
-
-
-
 
 
     fun removeCity(cityName: String) {
@@ -147,17 +107,12 @@ class WeatherViewModel : ViewModel() {
     }
 
 
-
-
-
-
-
-
     fun fetchWeatherDataForPreview(city: String, onResult: (CurrentWeather) -> Unit) {
         viewModelScope.launch {
             try {
                 val response = apiService.getCurrentWeather(city, "metric", apiKey)
                 if (response.isSuccessful && response.body() != null) {
+                    val weatherData = response.body()!!
                     onResult(response.body()!!)
                 }
             } catch (e: Exception) {
@@ -165,22 +120,7 @@ class WeatherViewModel : ViewModel() {
             }
         }
     }
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
 
 @Composable
 fun SearchViewBackArrowButton(context: Context) {
@@ -193,27 +133,12 @@ fun SearchViewBackArrowButton(context: Context) {
     }
 }
 
-
-
-
-
-
-
-
 //@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) -> Unit) {
     var query by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
-
-
-
-
-
-
-
-
     OutlinedTextField(
         value = query,
         onValueChange = {
@@ -258,29 +183,14 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
 }
 
 
-
-
-
-
-
-
 @Composable
 fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
     val weatherList by viewModel.weatherData.observeAsState(listOf())
     var showDeleteDialog by remember { mutableStateOf(false) }
     var previewQuery by remember { mutableStateOf("") }
     var previewWeather by remember { mutableStateOf<CurrentWeather?>(null) }
-
-
-
-
-
-
-
-
-
-
-
+//    val cities = cityStore.getCities()
+    val cities by cityStore.observeCities().collectAsState(initial = emptyList())
 
     WeatherAppTheme(darkTheme = false) {
         Surface(
@@ -303,13 +213,6 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                     }
                 }
 
-
-
-
-
-
-
-
                 // Show the preview card if there is data
                 if (previewWeather != null && previewQuery.isNotEmpty()) {
                     WeatherCard(
@@ -322,35 +225,25 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                     )
                 }
 
-
-
-
-
-
-
-
                 // Place Add and Remove buttons here
                 AddRemoveWeatherButtons(
                     onAddClicked = {
                         if (previewQuery.isNotEmpty()) {
                             // Fetch data for the city
-                            viewModel.fetchWeatherData(previewQuery)
-
-
-
-
-                            // Save the added city to the store
-                            viewModel.weatherData.value?.firstOrNull { it.name == previewQuery }?.let { weatherData ->
-                                viewModel.viewModelScope.launch {
-                                    cityStore.saveCity(weatherData.name)
+                            viewModel.fetchWeatherDataForPreview(previewQuery) { weatherData ->
+                                // Save the fetched CurrentWeather object to the CityStore
+                                cityStore.saveCity(weatherData)
+                                // Update the LiveData so that the UI gets notified
+                                // Check if the city is in the CityStore
+                                val isCityAdded = cityStore.getCities().any { it.name == weatherData.name }
+                                if (isCityAdded) {
+                                    // City successfully added, update the LiveData so that the UI gets notified
+                                    viewModel.updateWeatherData(weatherData)
+                                } else {
+                                    // Handle the case where the city was not added
+                                    // You can show a message or perform other actions
                                 }
                             }
-
-
-
-
-                            // Optionally, you can select the city here
-                            viewModel.selectCity(previewQuery)
                         }
                     },
                     onRemoveClicked = {
@@ -359,22 +252,18 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                 )
                 if (showDeleteDialog) {
                     DeleteLocationDialog(
-                        locations = weatherList, // Assuming this is your list of locations
+                        cityStore = cityStore, // Pass the list of cities from CityStore
                         onDismiss = { showDeleteDialog = false },
                         onDeleteLocation = { location ->
                             viewModel.removeCity(location)
+                            cityStore.removeCity(location)
                             showDeleteDialog = false
                         }
                     )
                 }
-//                fun clearAllCities() {
-//                    viewModel.viewModelScope.launch {
-//                        cityStore.clearCities()
-//                    }
-//                }
                 // Usage in LazyColumn
                 LazyColumn {
-                    items(weatherList ?: emptyList()) { weather ->
+                    items(cities) { weather ->
                         WeatherCard(
                             cityName = weather.name,
                             temperatureRange = "${weather.main.temp_min.toInt()}°C - ${weather.main.temp_max.toInt()}°C",
@@ -388,44 +277,29 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
                         )
                     }
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             }
         }
     }
 }
 @Composable
 fun DeleteLocationDialog(
-    locations: List<CurrentWeather>,
+    cityStore: CityStore,//List<CurrentWeather>,
     onDismiss: () -> Unit,
     onDeleteLocation: (String) -> Unit
 ) {
+    val cities by cityStore.observeCities().collectAsState(initial = emptyList())
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text("Delete Location") },
         text = {
             LazyColumn {
-                items(locations) { location ->
+                items(cities) { city ->
                     Text(
-                        text = location.name,
+                        text = city.name,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
-                            .clickable { onDeleteLocation(location.name) }
+                            .clickable { onDeleteLocation(city.name) }
                     )
                 }
             }
@@ -437,4 +311,3 @@ fun DeleteLocationDialog(
         }
     )
 }
-

@@ -145,7 +145,7 @@ fun LocationScreen(locationStore:LocationStore) {
                     }
                     Button(
                         onClick = {
-                            context.startActivity(Intent(context, Settings::class.java))
+//                            context.startActivity(Intent(context, Settings::class.java))
                         }
                     ) {
                         Text(text = "Don't Allow")

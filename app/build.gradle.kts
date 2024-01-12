@@ -58,6 +58,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     // observeAsState
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
     implementation ("androidx.compose.runtime:runtime-livedata:<version>")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
     implementation ("com.google.android.gms:play-services-location:21.0.1")
