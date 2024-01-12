@@ -50,13 +50,20 @@ class EnableLocation : ComponentActivity() {
 
 @Composable
 fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
+    val userNameText = remember { mutableStateOf("") }
+    val radioButtonOptionText = remember { mutableStateOf(RadioButtonOption.LessThanTen) }
+    LaunchedEffect(Unit) {
+        userStore.getPref.collect { (name,choice)->
+            userNameText.value = name
+            radioButtonOptionText.value=choice
+        }
+    }
 
 
     val context = LocalContext.current
-    var location by remember { mutableStateOf("Your location") }
+
     val locationPermissionGranted = remember { mutableStateOf(false) }
-    val userNameText = remember { mutableStateOf("") }
-    val radioButtonOptionText = remember { mutableStateOf(RadioButtonOption.LessThanTen) }
+
 
     //val locationPermissionGranted by remember { mutableStateOf(locationPerm.value) }
     val coroutine = rememberCoroutineScope()
@@ -68,7 +75,7 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
                 if (isGranted) {
                     // Permission granted, update the location
                     getCurrentLocation(context) { latitude, longitude ->
-                        location = "Latitude: $latitude, Longitude: $longitude"
+
                         coroutine.launch {
                             withContext(Dispatchers.IO) {
                                 locationStore.saveLoc(context, enabled = true)
@@ -104,14 +111,14 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Importance of Location Enabling",
+                    text = "We would like to access your Location ",
 
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Text(
-                    text = "Enabling location allows the app to provide you with personalized services and features based on your current location. It helps in providing accurate information, nearby recommendations, and location-based notifications.",
+                    text = " Enabling location would improve your experience by giving you accurate information,.",
 
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -125,7 +132,7 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
                             if (hasLocationPermission(context)) {
                                 // Permission already granted, update the location
                                 getCurrentLocation(context) { lat, long ->
-                                    location = "Latitude: $lat, Longitude: $long"
+
                                     coroutine.launch {
                                         withContext(Dispatchers.IO) {
                                             locationStore.saveLoc(context, enabled = true)
@@ -140,13 +147,13 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
 
                                     }
                                 }
-
-                                context.startActivity(Intent(context,MainActivity::class.java))
+                                 if(userNameText.value=="User"){context.startActivity(Intent(context,LogoPage::class.java))}
+                                else{context.startActivity(Intent(context,MainActivity::class.java))}
                             } else {
                                 // Request location permission
                                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             }
-                            context.startActivity(Intent(context, Settings::class.java))
+
                         },
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
@@ -155,6 +162,9 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
                     Button(
                         onClick = {
                             context.startActivity(Intent(context, Settings::class.java))
+                            coroutine.launch {
+                                withContext(Dispatchers.IO) {
+                                    locationStore.saveLoc(context, enabled = false)}}
                         }
                     ) {
                         Text(text = "Don't Allow")
@@ -163,8 +173,6 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = location)
-        Text(text= "${locationPermissionGranted.value}")
     }
 }
 
