@@ -71,15 +71,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Bristol"
-        val temperatureRange = intent.getStringExtra("TEMPERATURE_RANGE_KEY") ?: "0 - 1"
-
+        val temperatureRange = intent.getStringExtra("TEMPERATURE_RANGE_KEY") ?: "N/A"
+        val humidity = intent.getStringExtra("HUMIDITY_KEY") ?: "N/A"
+        val sunrise = intent.getStringExtra("SUNRISE_KEY") ?: "N/A"
+        val sunset = intent.getStringExtra("SUNSET_KEY") ?: "N/A"
+        val windSpeed = intent.getStringExtra("WIND_SPEED_KEY") ?: "N/A"
+        val airPressure = intent.getStringExtra("AIR_PRESSURE_KEY") ?: "N/A" // Corrected the spelling here
         setContent {
             WeatherAppTheme {
                 val weatherData by viewModel.weatherData.observeAsState(initial = listOf())
 
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
                 {
-                    PurpleActivityMaterial3(cityName, temperatureRange)
+                    PurpleActivityMaterial3(cityName, temperatureRange, humidity, sunrise, sunset, windSpeed, airPressure)
                 }
             }
         }
@@ -92,8 +96,7 @@ class MainActivity : ComponentActivity() {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PurpleActivityMaterial3(cityName: String, temperatureRange: String) {
-
+fun PurpleActivityMaterial3(cityName: String, temperatureRange: String, humidity: String, sunrise: String, sunset: String, windSpeed: String, airPressure: String) {
     //val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     //val sheetState = rememberModalBottomSheetState()
     var optionalHandlerClicked by remember { mutableStateOf(false) }
@@ -206,7 +209,7 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String) {
             Column(
                 modifier = Modifier
                     .width(3500.dp)
-                    .height(195.dp)
+                    .height(300.dp)
                     .padding(start = 18.dp, end = 16.dp, bottom = 10.dp, top = 7.dp),
 
 
@@ -246,12 +249,23 @@ fun PurpleActivityMaterial3(cityName: String, temperatureRange: String) {
                     )
                 )
                 // Add weather details content
+                Text(text = "Wind Speed: $windSpeed")
+                Text(text = "Sunrise: $sunrise")
+                Text(text = "Sunset: $sunset")
+                Text(text = "Air Pressure: $airPressure")
+                Text(text = "Humidity: $humidity")
             }
+
         }
         }
 
     )
 
+}
+
+@Composable
+fun WeatherDetailCard(title: String, value: String) {
+    // ... implementation of WeatherDetailCard ...
 }
 
 //val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
@@ -352,6 +366,6 @@ data class CardItemData(val icon: Painter, val text: String)
 @Composable
 fun GreetingPreview() {
     WeatherAppTheme {
-        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1")
+        PurpleActivityMaterial3(cityName = "Sample City", temperatureRange = "0 - 1", sunrise = "ok", sunset = "ok", humidity = "ok", airPressure = "test", windSpeed = "0-1")
     }
 }

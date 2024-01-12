@@ -55,6 +55,8 @@ import com.example.weatherapp.data.models.CurrentWeather
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import com.example.weatherapp.utils.RetrofitInstance
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class SearchView : ComponentActivity() {
@@ -111,7 +113,14 @@ class WeatherViewModel : ViewModel() {
                 val response = apiService.getCurrentWeather(city, "metric", apiKey)
                 if (response.isSuccessful && response.body() != null) {
                     val weatherData = response.body()!!
-                    onResult(response.body()!!)
+                    // Extract additional data
+                    val humidity = weatherData.main.humidity
+                    val sunrise = weatherData.sys.sunrise
+                    val sunset = weatherData.sys.sunset
+                    val windSpeed = weatherData.wind.speed
+                    val airPressure = weatherData.main.pressure
+                    // Call onResult with the weather data
+                    onResult(weatherData)
                 }
             } catch (e: Exception) {
                 // Handle exceptions
@@ -158,14 +167,24 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {
             if (query.isNotEmpty()) {
-                viewModel.fetchWeatherDataForPreview(query) { weatherData ->
+                    viewModel.fetchWeatherDataForPreview(query) { weatherData ->
                     // Get the temperature range from the fetched weather data
                     val temperatureRange = "${weatherData.main.temp_min.toInt()}°C - ${weatherData.main.temp_max.toInt()}°C"
-
+                    // Extract additional weather details
+                    val humidity = "${weatherData.main.humidity}%"
+                    val sunrise = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(weatherData.sys.sunrise * 1000L))
+                    val sunset = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(weatherData.sys.sunset * 1000L))
+                    val windSpeed = "${weatherData.wind.speed} m/s"
+                    val airPressure = "${weatherData.main.pressure} hPa"
                     // Create the Intent to start MainActivity and pass the temperature range
                     val intent = Intent(context, MainActivity::class.java).apply {
                         putExtra("CITY_NAME_KEY", weatherData.name) // Pass city name to MainActivity
                         putExtra("TEMPERATURE_RANGE_KEY", temperatureRange) // Pass temperature range to MainActivity
+                        putExtra("HUMIDITY_KEY", humidity)
+                        putExtra("SUNRISE_KEY", sunrise)
+                        putExtra("SUNSET_KEY", sunset)
+                        putExtra("WIND_SPEED_KEY", windSpeed)
+                        putExtra("AIR_PRESSURE_KEY", airPressure)
                     }
 
                     // Start MainActivity
