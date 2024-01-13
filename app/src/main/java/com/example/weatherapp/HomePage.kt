@@ -336,7 +336,7 @@ fun HourlySchedule(hours:List<String>,hours_temp:List<String>) {
 
 
 val hours = listOf("00 AM", "03 AM", "06 AM", "09 AM", "12 PM", "03 PM", "06 PM")
-val weeks = listOf("Mon","Tue","Wed")
+val weeks = listOf("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
 val hours_temp= listOf("3","3","3","3","3","3","3")
 val week_temp= listOf("4","4","5","6","3","3","3")
 @Composable
