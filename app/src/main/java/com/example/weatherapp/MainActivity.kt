@@ -237,7 +237,7 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
                     }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
+                            contentDescription = "Cloudy"
                         )
                     }
                 }
