@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -64,7 +65,7 @@ class UserPreferences : ComponentActivity() {
 
     }
 
-    //here add private function
+
 
 }
 
@@ -87,6 +88,14 @@ fun Images(locationStore: LocationStore,userStore:UserStore) {
     val longitude= remember { mutableDoubleStateOf(0.0) }
     val coroutine = rememberCoroutineScope()
     val context = LocalContext.current
+    // getting the location state to check whether to go to location view or logo page
+    LaunchedEffect(Unit) {
+        locationStore.getLocation.collect { enabled->
+
+            locationPermissionGranted.value=enabled
+        }
+    }
+
     val image = painterResource(R.drawable.logo_foreground)
 
     Column(
@@ -106,9 +115,7 @@ fun Images(locationStore: LocationStore,userStore:UserStore) {
         Button(onClick = { // getting the value of enabled and assign it to the variable
             // then decide which activity to go to next
             coroutine.launch {
-                locationStore.getLocation.collect { enabled ->
 
-                    locationPermissionGranted.value = enabled}
                 locationStore.getLatitude.collect{lat ->
                     latitude.doubleValue = lat }
                 locationStore.getLongitude.collect{long ->
@@ -155,5 +162,4 @@ fun ImagesPreview() {
         val context =  LocalContext.current
         Images(locationStore = LocationStore(context), userStore = UserStore(context ))
     }
-
 }
