@@ -297,11 +297,12 @@ fun Greeting(userStore: UserStore,locationStore:LocationStore) {
                         if (showDialog3) {
                             AlertDialog(
                                 onDismissRequest = { showDialog3 = false },
-                                title = { Text(text = "User Preferences ") },
+                                title = { Text(text = " Location details ") },
                                 text = {
                                     Column {
-                                        Text(text = "User Name: ${latitude.doubleValue}")
-                                        Text(text = "User Name: ${longitude.doubleValue}")
+                                        Text(text = "Latitude: ${latitude.doubleValue}")
+                                        Text(text = "Longitude
+                                             : ${longitude.doubleValue}")
                                     }
                                 },
                                 confirmButton = {
