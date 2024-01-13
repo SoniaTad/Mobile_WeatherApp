@@ -144,8 +144,8 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
 
                                     }
                                 }
-                                 if(userNameText.value=="User"){context.startActivity(Intent(context,LogoPage::class.java))}
-                                else{context.startActivity(Intent(context,MainActivity::class.java))}
+                                 if(userNameText.value=="User"){context.startActivity(Intent(context,UserPreferences::class.java))}
+                                else{context.startActivity(Intent(context,HomePage::class.java))}
                             } else {
                                 // Request location permission
                                 requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)

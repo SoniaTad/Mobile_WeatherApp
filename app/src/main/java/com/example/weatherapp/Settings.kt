@@ -112,7 +112,7 @@ fun Greeting(userStore: UserStore,locationStore:LocationStore) {
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { context.startActivity(Intent(context, MainActivity::class.java))}) {
+                    IconButton(onClick = { context.startActivity(Intent(context, HomePage::class.java))}) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back Arrow"
@@ -264,7 +264,7 @@ fun Greeting(userStore: UserStore,locationStore:LocationStore) {
                         )
 
                         TextButton(onClick = {
-                            val intent = Intent(context, LogoPage::class.java)
+                            val intent = Intent(context, UserPreferences::class.java)
                             context.startActivity(intent)
                         }) {
                             Text(text = "Edit")

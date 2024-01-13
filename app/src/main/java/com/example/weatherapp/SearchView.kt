@@ -170,7 +170,7 @@ class WeatherViewModel : ViewModel() {
 fun SearchViewBackArrowButton(context: Context) {
     IconButton( // navigating to main view
         onClick = {
-            context.startActivity(Intent(context, MainActivity::class.java))
+            context.startActivity(Intent(context, HomePage::class.java))
         }
     ) {
         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Back")
@@ -207,7 +207,7 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
                     val windSpeed = "${weatherData.wind.speed} m/s"
                     val airPressure = "${weatherData.main.pressure} hPa"
                     // Create the Intent to start MainActivity and pass the temperature range
-                    val intent = Intent(context, MainActivity::class.java).apply {
+                    val intent = Intent(context, HomePage::class.java).apply {
                         putExtra("CITY_NAME_KEY", weatherData.name) // Pass city name to MainActivity
                         putExtra("TEMPERATURE_RANGE_KEY", temperatureRange) // Pass temperature range to MainActivity
                         putExtra("HUMIDITY_KEY", humidity)
