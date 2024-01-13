@@ -45,6 +45,7 @@ import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -66,32 +67,58 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.theme.WeatherAppTheme
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 
 class MainActivity : ComponentActivity() {
     private val viewModel: WeatherViewModel by viewModels()
     private val locationStore by lazy { LocationStore(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val cityName = intent.getStringExtra("CITY_NAME_KEY") ?: "Bristol"
-        val temperatureRange = intent.getStringExtra("TEMPERATURE_RANGE_KEY") ?: "N/A"
-        val humidity = intent.getStringExtra("HUMIDITY_KEY") ?: "N/A"
-        val sunrise = intent.getStringExtra("SUNRISE_KEY") ?: "N/A"
-        val sunset = intent.getStringExtra("SUNSET_KEY") ?: "N/A"
-        val windSpeed = intent.getStringExtra("WIND_SPEED_KEY") ?: "N/A"
-        val airPressure = intent.getStringExtra("AIR_PRESSURE_KEY") ?: "N/A" // Corrected the spelling here
         setContent {
             WeatherAppTheme {
                 val weatherData by viewModel.weatherData.observeAsState(initial = listOf())
+                var cityName by remember { mutableStateOf("Loading...") }
+                var temperatureRange by remember { mutableStateOf("N/A") }
+                var humidity by remember { mutableStateOf("N/A") }
+                var sunrise by remember { mutableStateOf("N/A") }
+                var sunset by remember { mutableStateOf("N/A") }
+                var windSpeed by remember { mutableStateOf("N/A") }
+                var airPressure by remember { mutableStateOf("N/A") }
 
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background)
-                {
-                    PurpleActivityMaterial3(locationStore,cityName, temperatureRange, humidity, sunrise, sunset, windSpeed, airPressure)
+                val searchedCityName = intent.getStringExtra("CITY_NAME_KEY")
+                if (searchedCityName != null) {
+                    viewModel.updateWeatherDataFromSearch(searchedCityName)
+                } else {
+                    val latitude = locationStore.getLatitude.collectAsState(initial = 0.0).value
+                    val longitude = locationStore.getLongitude.collectAsState(initial = 0.0).value
+                    if (latitude != 0.0 && longitude != 0.0) {
+                        viewModel.fetchWeatherDataWithCoordinates(latitude, longitude)
+                    }
+                }
+
+                if (weatherData.isNotEmpty()) {
+                    val currentWeather = weatherData.first()
+                    cityName = currentWeather.name
+                    temperatureRange = "${currentWeather.main.temp_min.toInt()}°C - ${currentWeather.main.temp_max.toInt()}°C"
+                    humidity = "${currentWeather.main.humidity}%"
+                    sunrise = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(currentWeather.sys.sunrise * 1000L))
+                    sunset = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(currentWeather.sys.sunset * 1000L))
+                    windSpeed = "${currentWeather.wind.speed} m/s"
+                    airPressure = "${currentWeather.main.pressure} hPa"
+                }
+
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    PurpleActivityMaterial3(locationStore, cityName, temperatureRange, humidity, sunrise, sunset, windSpeed, airPressure)
                 }
             }
         }
     }
 }
+
 
 
 
@@ -175,7 +202,7 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
                         (Spacer(modifier = Modifier.height(20.dp)))
                         Box( modifier= Modifier
                             .width(390.dp)
-                            .background(Color.Red)
+                            .background(Color(0xFFA59AC0))
                             .height(800.dp)
                             .padding(30.dp)) {
 
@@ -194,7 +221,7 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
 
         topBar = {
             TopAppBar(
-                title = { Text(text = "Title") },
+                title = { Text(text = "Search") },
                 actions = {
                     IconButton(onClick = { context.startActivity(Intent(context, Settings::class.java))}) {
                         Icon(
@@ -237,10 +264,10 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
                 Text(
                     text = cityName,
                     Modifier
-                        .width(200.dp)
-                        .height(41.dp),
+                        .width(300.dp)
+                        .height(60.dp),
                     style = TextStyle(
-                        fontSize = 34.sp,
+                        fontSize = 40.sp,
                         lineHeight = 20.sp,
                         //fontFamily = FontFamily(Font(R.font.amaranth)),
                         fontWeight = FontWeight(400),
@@ -272,11 +299,6 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
 
     )
 
-}
-
-@Composable
-fun WeatherDetailCard(title: String, value: String) {
-    // ... implementation of WeatherDetailCard ...
 }
 
 //val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
@@ -313,7 +335,7 @@ fun HourlySchedule(hours:List<String>,hours_temp:List<String>) {
     }
 
 
-val hours = listOf("9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM")
+val hours = listOf("00 AM", "03 AM", "06 AM", "09 AM", "12 PM", "03 PM", "06 PM")
 val weeks = listOf("Mon","Tue","Wed")
 val hours_temp= listOf("3","3","3","3","3","3","3")
 val week_temp= listOf("4","4","5","6","3","3","3")

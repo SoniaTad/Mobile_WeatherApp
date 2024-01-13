@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -121,6 +122,41 @@ class WeatherViewModel : ViewModel() {
             }
         }
     }
+    // Function to fetch weather data based on coordinates
+    fun fetchWeatherDataWithCoordinates(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getCurrentCoord(latitude, longitude, apiKey)
+                if (response.isSuccessful && response.body() != null) {
+                    // Update LiveData with the new weather data
+                    _weatherData.postValue(listOf(response.body()!!))
+                } else {
+                    // Handle errors
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
+            }
+        }
+    }
+
+    // Call this method when a search is performed
+    fun updateWeatherDataFromSearch(cityName: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getCurrentWeather(cityName, "metric", apiKey)
+                if (response.isSuccessful && response.body() != null) {
+                    _weatherData.postValue(listOf(response.body()!!))
+                }
+            } catch (e: Exception) {
+                // Handle exceptions
+            }
+        }
+    }
+
+    fun updateSelectedCity(cityName: String) {
+        _selectedCity.postValue(cityName)
+    }
+
 
     init {
         searchQuery.observeForever { newQuery ->
@@ -162,7 +198,7 @@ fun SearchViewSearchBar(viewModel: WeatherViewModel, onQueryChanged: (String) ->
         keyboardActions = KeyboardActions(onSearch = {
             if (query.isNotEmpty()) {
                     viewModel.fetchWeatherDataForPreview(query) { weatherData ->
-                    // Get the temperature range from the fetched weather data
+                        // Get the temperature range from the fetched weather data
                     val temperatureRange = "${weatherData.main.temp_min.toInt()}°C - ${weatherData.main.temp_max.toInt()}°C"
                     // Extract additional weather details
                     val humidity = "${weatherData.main.humidity}%"
@@ -220,7 +256,7 @@ fun SearchViewPreview(viewModel: WeatherViewModel, cityStore: CityStore) {
     WeatherAppTheme(darkTheme = false) {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+            color = Color(0xFFF7F2FA) // Set the background color here
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),

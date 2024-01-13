@@ -301,8 +301,7 @@ fun Greeting(userStore: UserStore,locationStore:LocationStore) {
                                 text = {
                                     Column {
                                         Text(text = "Latitude: ${latitude.doubleValue}")
-                                        Text(text = "Longitude
-                                             : ${longitude.doubleValue}")
+                                        Text(text = "Longitude: ${longitude.doubleValue}")
                                     }
                                 },
                                 confirmButton = {

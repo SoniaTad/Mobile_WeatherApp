@@ -64,8 +64,6 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
 
     val locationPermissionGranted = remember { mutableStateOf(false) }
 
-
-    //val locationPermissionGranted by remember { mutableStateOf(locationPerm.value) }
     val coroutine = rememberCoroutineScope()
     // Create a permission launcher
     val requestPermissionLauncher =
@@ -81,7 +79,6 @@ fun LocationScreen(locationStore:LocationStore,userStore: UserStore) {
                                 locationStore.saveLoc(context, enabled = true)
 
                                 locationStore.saveDetails(context, latitude, longitude)
-                                //might need to add function to retrieve the details
 
                             }
                             locationStore.getLocation.collect { enabled ->
@@ -217,6 +214,7 @@ fun Location() {
         val context= LocalContext.current
 
         LocationScreen(locationStore = LocationStore(context), userStore = UserStore(context))
+
     }
 }
 

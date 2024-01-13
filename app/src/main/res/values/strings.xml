@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeatherApp</string>
+    <string name="app_name">Cloud</string>
     <string name="title_activity_user_preferences">UserPreferences</string>
     <string name="title_activity_logo_page">LogoPage</string>
     <string name="Question1">Starting from which temperature would you consider taking a jacket with you</string>
