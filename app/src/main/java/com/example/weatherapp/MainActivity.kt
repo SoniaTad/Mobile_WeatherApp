@@ -1,6 +1,7 @@
 package com.example.weatherapp
 
 
+import LocationStore
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -42,9 +43,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -193,7 +196,7 @@ fun PurpleActivityMaterial3(locationStore: LocationStore,cityName: String, tempe
             TopAppBar(
                 title = { Text(text = "Title") },
                 actions = {
-                    IconButton(onClick = { /* do something, like open settings */ }) {
+                    IconButton(onClick = { context.startActivity(Intent(context, Settings::class.java))}) {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings"

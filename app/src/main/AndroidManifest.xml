@@ -28,9 +28,8 @@
         <activity
             android:name=".Settings"
             android:exported="false"
-            android:label="@string/title_activity_settings"
+            android:label="Settings"
             android:theme="@style/Theme.WeatherApp" />
-        <activity
         <activity
             android:name=".LogoPage"
             android:exported="true"
