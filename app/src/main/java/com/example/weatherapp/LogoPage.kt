@@ -86,7 +86,6 @@ fun UserPreferencesDialog(userStore: UserStore){
     val (selectedOption,onOptionSelected) = remember { mutableStateOf(RadioButtonOption.entries.first()) }
     var userName by remember { mutableStateOf("") }
     val coroutine = rememberCoroutineScope()
-    //val openDialog = remember { mutableStateOf(true) }
     var inputError by mutableStateOf(false)
 
     val context = LocalContext.current
@@ -96,7 +95,6 @@ fun UserPreferencesDialog(userStore: UserStore){
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF6A3CBB)),
-        //contentAlignment = Alignment.Center
     ) {
 
         AlertDialog(
@@ -114,7 +112,7 @@ fun UserPreferencesDialog(userStore: UserStore){
                         value = userName,
                         onValueChange = { input ->
                             userName = input
-                            inputError = input.isBlank() // Example validation: check if the input is blank
+                            inputError = input.isBlank()
                         },
                         label = { Text("Name") },
                     )
@@ -165,7 +163,7 @@ fun UserPreferencesDialog(userStore: UserStore){
                             withContext(Dispatchers.IO) {
                         userStore.savePref(selectedUserName, finalOption)}
                             val (name, option) = userStore.getPref.first()
-                            setData("User Name: $name\nRadio Button Option: $option")
+                            setData("User Name: $name\nTemperature option: $option")
                             showDialog.value = true}
                     }
                 ) {
@@ -176,8 +174,7 @@ fun UserPreferencesDialog(userStore: UserStore){
                         DisplayDataDialog(data = data,
                             onClose = {
                                 showDialog.value = false
-                            //context.startActivity(Intent(context, MainActivity::class.java))
-                                // this is to send user pref to the settings activity
+
                                 val firstIntent = Intent(context, Settings::class.java)
 
                                 context.startActivity(firstIntent)
@@ -218,5 +215,7 @@ fun DisplayDataDialog(data: String, onClose: () -> Unit) {
             UserPreferencesDialog(userStore = UserStore(context))
         }
     }
+
+
 
 
