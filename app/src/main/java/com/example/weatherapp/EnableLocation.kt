@@ -205,7 +205,7 @@ private fun getCurrentLocation(context: Context, callback: (Double, Double) -> U
             }
         }
         .addOnFailureListener { exception ->
-            // Handle location retrieval failure
+            
             exception.printStackTrace()
         }
 }
@@ -219,3 +219,4 @@ fun Location() {
         LocationScreen(locationStore = LocationStore(context), userStore = UserStore(context))
     }
 }
+
