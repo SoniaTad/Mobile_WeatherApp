@@ -19,6 +19,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherApp"
         tools:targetApi="31">
+         <activity
+            android:name=".EnableLocation"
+            android:exported="false"
+            android:label="EnableLocation"
+            android:theme="@style/Theme.WeatherApp" />
+
+        <activity
+            android:name=".Settings"
+            android:exported="false"
+            android:label="@string/title_activity_settings"
+            android:theme="@style/Theme.WeatherApp" />
+        <activity
         <activity
             android:name=".LogoPage"
             android:exported="true"
